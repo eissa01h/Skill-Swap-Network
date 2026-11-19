@@ -41,3 +41,4 @@ public class UpdateProfileRequest {
     public String getAvailability() { return availability; }
     public void setAvailability(String availability) { this.availability = availability; }
 }
+

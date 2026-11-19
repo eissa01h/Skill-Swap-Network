@@ -74,3 +74,4 @@ class DuplicateSkillPreventionTest {
         assertThrows(ConflictException.class, () -> skillService.addLearningInterest(user, request));
     }
 }
+

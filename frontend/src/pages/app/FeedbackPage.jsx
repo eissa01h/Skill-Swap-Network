@@ -7,7 +7,7 @@ import { Select } from '../../components/ui/Select/Select';
 import { Textarea } from '../../components/ui/Input/Textarea';
 import { Spinner } from '../../components/ui/Feedback/Spinner';
 import { EmptyState } from '../../components/ui/Feedback/EmptyState';
-import { reviewService } from '../../services/mockApi';
+import { feedbackService } from '../../services/feedbackService';
 
 export function FeedbackPage() {
   const [reviews, setReviews] = useState([]);
@@ -25,7 +25,7 @@ export function FeedbackPage() {
   const loadReviews = async () => {
     try {
       setLoading(true);
-      const data = await reviewService.getReviews();
+      const data = await feedbackService.getReviews();
       setReviews(data || []);
     } catch (err) {
       console.error(err);
@@ -52,7 +52,7 @@ export function FeedbackPage() {
     try {
       setSubmitting(true);
       setErrorMsg('');
-      await reviewService.submitReview(newReview);
+      await feedbackService.submitFeedback(newReview);
       await loadReviews();
       setNewReview({
         partner: 'Carlos Rodriguez',

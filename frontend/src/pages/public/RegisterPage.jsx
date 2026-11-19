@@ -18,7 +18,7 @@ export function RegisterPage() {
   });
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const { login } = useAuth();
+  const { register } = useAuth();
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -30,10 +30,16 @@ export function RegisterPage() {
     setError('');
     setSubmitting(true);
     try {
-      await login({ email: formData.email, password: formData.password });
+      await register({
+        fullName: formData.fullName,
+        email: formData.email,
+        password: formData.password,
+        location: formData.location,
+        bio: formData.bio,
+      });
       navigate('/app/teaching');
     } catch (err) {
-      setError(err.message || 'Registration failed.');
+      setError(err.message || 'Registration failed. Please check your details and try again.');
     } finally {
       setSubmitting(false);
     }
@@ -118,4 +124,3 @@ export function RegisterPage() {
     </PublicLayout>
   );
 }
-

@@ -7,7 +7,7 @@ import { StatusBadge } from '../../components/ui/Badge/StatusBadge';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog/ConfirmDialog';
 import { Spinner } from '../../components/ui/Feedback/Spinner';
 import { EmptyState } from '../../components/ui/Feedback/EmptyState';
-import { adminService } from '../../services/mockApi';
+import { adminService } from '../../services/adminService';
 
 export function AdminUsersPage() {
   const [users, setUsers] = useState([]);

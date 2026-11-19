@@ -45,3 +45,4 @@ public class SubmitFeedbackRequest {
     public Short getTeachingClarityRating() { return teachingClarityRating; }
     public void setTeachingClarityRating(Short teachingClarityRating) { this.teachingClarityRating = teachingClarityRating; }
 }
+

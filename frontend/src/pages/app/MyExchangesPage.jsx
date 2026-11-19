@@ -6,7 +6,7 @@ import { Button } from '../../components/ui/Button/Button';
 import { StatusBadge } from '../../components/ui/Badge/StatusBadge';
 import { Spinner } from '../../components/ui/Feedback/Spinner';
 import { EmptyState } from '../../components/ui/Feedback/EmptyState';
-import { swapService } from '../../services/mockApi';
+import { exchangeService } from '../../services/exchangeService';
 
 export function MyExchangesPage() {
   const [exchanges, setExchanges] = useState([]);
@@ -15,7 +15,7 @@ export function MyExchangesPage() {
   const loadExchanges = async () => {
     try {
       setLoading(true);
-      const data = await swapService.getActiveExchanges();
+      const data = await exchangeService.getUserExchanges();
       setExchanges(data || []);
     } catch (err) {
       console.error(err);
@@ -30,7 +30,7 @@ export function MyExchangesPage() {
 
   const handleComplete = async (id) => {
     try {
-      await swapService.completeExchange(id);
+      await exchangeService.completeExchange(id);
       await loadExchanges();
     } catch (err) {
       console.error(err);

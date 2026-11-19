@@ -14,3 +14,4 @@ public interface ReportRepository extends JpaRepository<Report, UUID> {
     List<Report> findByReportedUserIdOrderByCreatedAtDesc(UUID reportedUserId);
     long countByStatus(String status);
 }
+

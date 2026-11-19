@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { AppLayout } from '../../layouts/AppLayout';
 import { Button } from '../../components/ui/Button/Button';
 import { Spinner } from '../../components/ui/Feedback/Spinner';
-import { messageService } from '../../services/mockApi';
+import { messageService } from '../../services/messageService';
 
 export function MessagesPage() {
   const [conversations, setConversations] = useState([]);

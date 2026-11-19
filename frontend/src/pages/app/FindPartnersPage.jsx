@@ -10,9 +10,9 @@ import { Modal } from '../../components/ui/Modal/Modal';
 import { Textarea } from '../../components/ui/Input/Textarea';
 import { EmptyState } from '../../components/ui/Feedback/EmptyState';
 import { Spinner } from '../../components/ui/Feedback/Spinner';
-import { matchService } from '../../services/mockApi';
-import { swapService } from '../../services/swapService';
-import { skillService } from '../../services/skillService';
+import { searchService } from '../../services/searchService';
+import { exchangeRequestService } from '../../services/exchangeRequestService';
+import { teachingSkillService } from '../../services/teachingSkillService';
 import { MOCK_SKILL_CATEGORIES } from '../../utils/mockData';
 
 export function FindPartnersPage() {
@@ -34,16 +34,16 @@ export function FindPartnersPage() {
     async function fetchPartners() {
       setLoading(true);
       try {
-        const results = await matchService.searchPartners({
+        const results = await searchService.searchPartners({
           query: searchTerm,
           category,
           minRating: Number(minRating),
         });
-        setPartners(results);
+        setPartners(results || []);
 
-        const mySkills = await skillService.getTeachingSkills();
-        setMyTeachingSkills(mySkills);
-        if (mySkills.length > 0) {
+        const mySkills = await teachingSkillService.getTeachingSkills();
+        setMyTeachingSkills(mySkills || []);
+        if (mySkills && mySkills.length > 0) {
           setSelectedOffer(mySkills[0].name);
         }
       } finally {
@@ -64,7 +64,7 @@ export function FindPartnersPage() {
 
     setSending(true);
     try {
-      await swapService.createProposal({
+      await exchangeRequestService.createRequest({
         partner: selectedPartner,
         youOffer: selectedOffer,
         youWant: selectedPartner.teaches,

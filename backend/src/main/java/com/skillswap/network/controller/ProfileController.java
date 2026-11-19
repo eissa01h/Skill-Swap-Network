@@ -47,3 +47,4 @@ public class ProfileController {
         return ResponseEntity.ok(ApiResponse.success(profile));
     }
 }
+

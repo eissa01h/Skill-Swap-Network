@@ -17,3 +17,4 @@ public interface UserProfileRepository extends JpaRepository<UserProfile, UUID> 
     @Query("SELECT p FROM UserProfile p WHERE LOWER(p.fullName) LIKE LOWER(CONCAT('%', :query, '%')) OR LOWER(p.bio) LIKE LOWER(CONCAT('%', :query, '%')) OR LOWER(p.location) LIKE LOWER(CONCAT('%', :query, '%'))")
     List<UserProfile> searchProfiles(@Param("query") String query);
 }
+

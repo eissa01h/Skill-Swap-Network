@@ -156,3 +156,4 @@ class ExchangeBusinessRulesTest {
         assertThrows(ConflictException.class, () -> feedbackService.submitFeedback(userA, request));
     }
 }
+

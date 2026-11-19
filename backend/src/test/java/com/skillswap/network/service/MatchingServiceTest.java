@@ -103,3 +103,4 @@ class MatchingServiceTest {
         assertTrue(matches.isEmpty(), "Must return empty result when no skills are registered");
     }
 }
+

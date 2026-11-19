@@ -6,7 +6,8 @@ import { Button } from '../../components/ui/Button/Button';
 import { Textarea } from '../../components/ui/Input/Textarea';
 import { Spinner } from '../../components/ui/Feedback/Spinner';
 import { EmptyState } from '../../components/ui/Feedback/EmptyState';
-import { matchService, swapService } from '../../services/mockApi';
+import { matchingService } from '../../services/matchingService';
+import { exchangeRequestService } from '../../services/exchangeRequestService';
 
 export function RecommendedMatchesPage() {
   const [matches, setMatches] = useState([]);
@@ -21,7 +22,7 @@ export function RecommendedMatchesPage() {
     const fetchMatches = async () => {
       try {
         setLoading(true);
-        const data = await matchService.getRecommendedMatches();
+        const data = await matchingService.getRecommendedMatches();
         setMatches(data || []);
       } catch (err) {
         console.error(err);
@@ -42,7 +43,7 @@ export function RecommendedMatchesPage() {
     try {
       setSubmitting(true);
       setErrorMsg('');
-      await swapService.createProposal({
+      await exchangeRequestService.createRequest({
         partner: selectedMatch.user,
         youOffer: selectedMatch.wantsFromYou,
         youWant: selectedMatch.teachesYou,

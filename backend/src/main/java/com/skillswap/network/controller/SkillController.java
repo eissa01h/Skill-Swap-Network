@@ -109,3 +109,4 @@ public class SkillController {
         return ResponseEntity.ok(ApiResponse.success("Learning interest removed", null));
     }
 }
+

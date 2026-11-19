@@ -7,7 +7,7 @@ import { Textarea } from '../../components/ui/Input/Textarea';
 import { Button } from '../../components/ui/Button/Button';
 import { ErrorMessage } from '../../components/ui/Feedback/ErrorMessage';
 import { useAuth } from '../../hooks/useAuth';
-import { authService } from '../../services/authService';
+import { profileService } from '../../services/profileService';
 
 export function EditProfilePage() {
   const { user, setUser } = useAuth();
@@ -40,8 +40,8 @@ export function EditProfilePage() {
     setError('');
     setSaving(true);
     try {
-      const updated = await authService.updateProfile(formData);
-      setUser(updated);
+      const updated = await profileService.updateProfile(formData);
+      setUser(prev => ({ ...prev, ...formData, ...updated }));
       setSavedSuccess(true);
       setTimeout(() => {
         setSavedSuccess(false);

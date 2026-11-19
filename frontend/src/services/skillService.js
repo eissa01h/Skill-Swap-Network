@@ -1,13 +1,16 @@
-import { skillService as mockSkills } from './mockApi';
+import { teachingSkillService } from './teachingSkillService';
+import { learningInterestService } from './learningInterestService';
 
 export const skillService = {
-  getTeachingSkills: () => mockSkills.getTeachingSkills(),
-  addTeachingSkill: (skill) => mockSkills.addTeachingSkill(skill),
-  updateTeachingSkill: (id, updates) => mockSkills.updateTeachingSkill(id, updates),
-  deleteTeachingSkill: (id) => mockSkills.deleteTeachingSkill(id),
+  getTeachingSkills: () => teachingSkillService.getTeachingSkills(),
+  addTeachingSkill: (skill) => teachingSkillService.addTeachingSkill(skill),
+  updateTeachingSkill: (id, updates) => teachingSkillService.updateTeachingSkill(id, updates),
+  deleteTeachingSkill: (id) => teachingSkillService.deleteTeachingSkill(id),
 
-  getLearningInterests: () => mockSkills.getLearningInterests(),
-  addLearningInterest: (interest) => mockSkills.addLearningInterest(interest),
-  updateLearningInterest: (id, updates) => mockSkills.updateLearningInterest(id, updates),
-  deleteLearningInterest: (id) => mockSkills.deleteLearningInterest(id),
+  getLearningInterests: () => learningInterestService.getLearningInterests(),
+  addLearningInterest: (interest) => learningInterestService.addLearningInterest(interest),
+  updateLearningInterest: (id, updates) => learningInterestService.updateLearningInterest(id, updates),
+  deleteLearningInterest: (id) => learningInterestService.deleteLearningInterest(id),
 };
+
+export default skillService;

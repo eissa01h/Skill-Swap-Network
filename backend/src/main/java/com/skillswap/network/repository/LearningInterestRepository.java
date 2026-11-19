@@ -23,3 +23,4 @@ public interface LearningInterestRepository extends JpaRepository<LearningIntere
     @Query("SELECT DISTINCT li.user.id FROM LearningInterest li WHERE li.skill.id = :skillId")
     List<UUID> findUserIdsWantingSkill(@Param("skillId") UUID skillId);
 }
+

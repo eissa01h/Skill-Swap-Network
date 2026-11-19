@@ -42,3 +42,4 @@ public class CreateReportRequest {
     public String getEvidenceText() { return evidenceText; }
     public void setEvidenceText(String evidenceText) { this.evidenceText = evidenceText; }
 }
+

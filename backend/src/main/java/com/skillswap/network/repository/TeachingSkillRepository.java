@@ -23,3 +23,4 @@ public interface TeachingSkillRepository extends JpaRepository<TeachingSkill, UU
     @Query("SELECT DISTINCT ts.user.id FROM TeachingSkill ts WHERE ts.skill.id = :skillId")
     List<UUID> findUserIdsTeachingSkill(@Param("skillId") UUID skillId);
 }
+

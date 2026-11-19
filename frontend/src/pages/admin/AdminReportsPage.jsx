@@ -6,7 +6,7 @@ import { Button } from '../../components/ui/Button/Button';
 import { StatusBadge } from '../../components/ui/Badge/StatusBadge';
 import { Spinner } from '../../components/ui/Feedback/Spinner';
 import { EmptyState } from '../../components/ui/Feedback/EmptyState';
-import { adminService } from '../../services/mockApi';
+import { adminService } from '../../services/adminService';
 
 export function AdminReportsPage() {
   const [reports, setReports] = useState([]);

@@ -23,3 +23,4 @@ public interface RatingFeedbackRepository extends JpaRepository<RatingFeedback, 
     @Query("SELECT COUNT(rf) FROM RatingFeedback rf WHERE rf.reviewee.id = :userId")
     long countReviewsForUser(@Param("userId") UUID userId);
 }
+

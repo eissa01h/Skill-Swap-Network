@@ -68,3 +68,4 @@ public class PartnerMatchDto {
     public List<String> getAllWants() { return allWants; }
     public void setAllWants(List<String> allWants) { this.allWants = allWants; }
 }
+

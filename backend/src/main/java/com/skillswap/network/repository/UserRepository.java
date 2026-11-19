@@ -18,3 +18,4 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     @Query("SELECT u FROM User u WHERE LOWER(u.email) LIKE LOWER(CONCAT('%', :search, '%'))")
     List<User> searchUsers(@Param("search") String search);
 }
+

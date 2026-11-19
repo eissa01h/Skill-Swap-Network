@@ -44,3 +44,4 @@ public class ConversationDto {
     public List<MessageDto> getMessages() { return messages; }
     public void setMessages(List<MessageDto> messages) { this.messages = messages; }
 }
+

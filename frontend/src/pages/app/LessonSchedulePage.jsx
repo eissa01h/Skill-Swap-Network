@@ -8,7 +8,7 @@ import { Select } from '../../components/ui/Select/Select';
 import { StatusBadge } from '../../components/ui/Badge/StatusBadge';
 import { Spinner } from '../../components/ui/Feedback/Spinner';
 import { EmptyState } from '../../components/ui/Feedback/EmptyState';
-import { scheduleService } from '../../services/mockApi';
+import { lessonService } from '../../services/lessonService';
 
 export function LessonSchedulePage() {
   const [lessons, setLessons] = useState([]);
@@ -27,7 +27,7 @@ export function LessonSchedulePage() {
   const loadLessons = async () => {
     try {
       setLoading(true);
-      const data = await scheduleService.getLessons();
+      const data = await lessonService.getLessons();
       setLessons(data || []);
     } catch (err) {
       console.error(err);
@@ -54,7 +54,7 @@ export function LessonSchedulePage() {
     try {
       setSubmitting(true);
       setErrorMsg('');
-      await scheduleService.scheduleLesson(newLesson);
+      await lessonService.scheduleLesson(newLesson);
       await loadLessons();
       setModalOpen(false);
       setNewLesson({

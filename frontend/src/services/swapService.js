@@ -1,12 +1,15 @@
-import { swapService as mockSwap } from './mockApi';
+import { exchangeRequestService } from './exchangeRequestService';
+import { exchangeService } from './exchangeService';
 
 export const swapService = {
-  getIncomingRequests: () => mockSwap.getIncomingRequests(),
-  getOutgoingRequests: () => mockSwap.getOutgoingRequests(),
-  createProposal: (data) => mockSwap.createProposal(data),
-  acceptRequest: (id) => mockSwap.acceptRequest(id),
-  declineRequest: (id) => mockSwap.declineRequest(id),
-  cancelRequest: (id) => mockSwap.cancelRequest(id),
-  getActiveExchanges: () => mockSwap.getActiveExchanges(),
-  completeExchange: (id) => mockSwap.completeExchange(id),
+  getIncomingRequests: () => exchangeRequestService.getReceivedRequests(),
+  getOutgoingRequests: () => exchangeRequestService.getSentRequests(),
+  createProposal: (data) => exchangeRequestService.createRequest(data),
+  acceptRequest: (id) => exchangeRequestService.acceptRequest(id),
+  declineRequest: (id) => exchangeRequestService.declineRequest(id),
+  cancelRequest: (id) => exchangeRequestService.cancelRequest(id),
+  getActiveExchanges: () => exchangeService.getUserExchanges(),
+  completeExchange: (id) => exchangeService.completeExchange(id),
 };
+
+export default swapService;

@@ -1,6 +1,8 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import ProtectedRoute from './components/auth/ProtectedRoute';
+import AdminRoute from './components/auth/AdminRoute';
 
 // Public Pages
 import { LandingPage } from './pages/public/LandingPage';
@@ -45,27 +47,27 @@ export function App() {
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/user/:id" element={<PublicProfilePage />} />
 
-          {/* Authenticated Member App Routes */}
-          <Route path="/app/dashboard" element={<DashboardPage />} />
-          <Route path="/app/profile" element={<ProfilePage />} />
-          <Route path="/app/profile/edit" element={<EditProfilePage />} />
-          <Route path="/app/teaching" element={<TeachingSkillsPage />} />
-          <Route path="/app/learning" element={<LearningInterestsPage />} />
-          <Route path="/app/find-partners" element={<FindPartnersPage />} />
-          <Route path="/app/matches" element={<RecommendedMatchesPage />} />
-          <Route path="/app/requests" element={<ExchangeRequestsPage />} />
-          <Route path="/app/exchanges" element={<MyExchangesPage />} />
-          <Route path="/app/messages" element={<MessagesPage />} />
-          <Route path="/app/schedule" element={<LessonSchedulePage />} />
-          <Route path="/app/feedback" element={<FeedbackPage />} />
-          <Route path="/app/notifications" element={<NotificationsPage />} />
+          {/* Authenticated Member App Routes (Protected) */}
+          <Route path="/app/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+          <Route path="/app/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+          <Route path="/app/profile/edit" element={<ProtectedRoute><EditProfilePage /></ProtectedRoute>} />
+          <Route path="/app/teaching" element={<ProtectedRoute><TeachingSkillsPage /></ProtectedRoute>} />
+          <Route path="/app/learning" element={<ProtectedRoute><LearningInterestsPage /></ProtectedRoute>} />
+          <Route path="/app/find-partners" element={<ProtectedRoute><FindPartnersPage /></ProtectedRoute>} />
+          <Route path="/app/matches" element={<ProtectedRoute><RecommendedMatchesPage /></ProtectedRoute>} />
+          <Route path="/app/requests" element={<ProtectedRoute><ExchangeRequestsPage /></ProtectedRoute>} />
+          <Route path="/app/exchanges" element={<ProtectedRoute><MyExchangesPage /></ProtectedRoute>} />
+          <Route path="/app/messages" element={<ProtectedRoute><MessagesPage /></ProtectedRoute>} />
+          <Route path="/app/schedule" element={<ProtectedRoute><LessonSchedulePage /></ProtectedRoute>} />
+          <Route path="/app/feedback" element={<ProtectedRoute><FeedbackPage /></ProtectedRoute>} />
+          <Route path="/app/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
 
-          {/* Admin Moderation Portal Routes */}
-          <Route path="/admin" element={<AdminDashboardPage />} />
-          <Route path="/admin/users" element={<AdminUsersPage />} />
-          <Route path="/admin/reports" element={<AdminReportsPage />} />
-          <Route path="/admin/reports/:id" element={<AdminReportDetailPage />} />
-          <Route path="/admin/moderation" element={<AdminModerationPage />} />
+          {/* Admin Moderation Portal Routes (Admin Protected) */}
+          <Route path="/admin" element={<AdminRoute><AdminDashboardPage /></AdminRoute>} />
+          <Route path="/admin/users" element={<AdminRoute><AdminUsersPage /></AdminRoute>} />
+          <Route path="/admin/reports" element={<AdminRoute><AdminReportsPage /></AdminRoute>} />
+          <Route path="/admin/reports/:id" element={<AdminRoute><AdminReportDetailPage /></AdminRoute>} />
+          <Route path="/admin/moderation" element={<AdminRoute><AdminModerationPage /></AdminRoute>} />
 
           {/* Backward Compatibility Redirects */}
           <Route path="/dashboard" element={<Navigate to="/app/dashboard" replace />} />

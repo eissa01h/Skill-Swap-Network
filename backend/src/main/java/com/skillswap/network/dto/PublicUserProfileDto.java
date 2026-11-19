@@ -56,3 +56,4 @@ public class PublicUserProfileDto {
     public List<LearningInterestDto> getLearningInterests() { return learningInterests; }
     public void setLearningInterests(List<LearningInterestDto> learningInterests) { this.learningInterests = learningInterests; }
 }
+

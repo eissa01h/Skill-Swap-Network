@@ -17,3 +17,4 @@ public interface ConversationRepository extends JpaRepository<Conversation, UUID
     @Query("SELECT c FROM Conversation c WHERE c.userOne.id = :userId OR c.userTwo.id = :userId ORDER BY c.lastMessageAt DESC")
     List<Conversation> findUserConversations(@Param("userId") UUID userId);
 }
+

@@ -17,20 +17,46 @@ public class CreateExchangeRequestDto {
     private String message;
     private String proposedSchedule;
 
-    public CreateExchangeRequestDto() {}
+    public CreateExchangeRequestDto() {
+    }
 
-    public UUID getRecipientId() { return recipientId; }
-    public void setRecipientId(UUID recipientId) { this.recipientId = recipientId; }
+    public UUID getRecipientId() {
+        return recipientId;
+    }
 
-    public UUID getOfferedSkillId() { return offeredSkillId; }
-    public void setOfferedSkillId(UUID offeredSkillId) { this.offeredSkillId = offeredSkillId; }
+    public void setRecipientId(UUID recipientId) {
+        this.recipientId = recipientId;
+    }
 
-    public UUID getRequestedSkillId() { return requestedSkillId; }
-    public void setRequestedSkillId(UUID requestedSkillId) { this.requestedSkillId = requestedSkillId; }
+    public UUID getOfferedSkillId() {
+        return offeredSkillId;
+    }
 
-    public String getMessage() { return message; }
-    public void setMessage(String message) { this.message = message; }
+    public void setOfferedSkillId(UUID offeredSkillId) {
+        this.offeredSkillId = offeredSkillId;
+    }
 
-    public String getProposedSchedule() { return proposedSchedule; }
-    public void setProposedSchedule(String proposedSchedule) { this.proposedSchedule = proposedSchedule; }
+    public UUID getRequestedSkillId() {
+        return requestedSkillId;
+    }
+
+    public void setRequestedSkillId(UUID requestedSkillId) {
+        this.requestedSkillId = requestedSkillId;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    public String getProposedSchedule() {
+        return proposedSchedule;
+    }
+
+    public void setProposedSchedule(String proposedSchedule) {
+        this.proposedSchedule = proposedSchedule;
+    }
 }

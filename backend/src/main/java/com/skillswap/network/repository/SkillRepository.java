@@ -15,3 +15,4 @@ public interface SkillRepository extends JpaRepository<Skill, UUID> {
     List<Skill> findByCategory(String category);
     List<Skill> findByIsApprovedTrue();
 }
+

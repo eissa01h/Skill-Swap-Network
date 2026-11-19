@@ -19,3 +19,4 @@ public interface LessonRepository extends JpaRepository<Lesson, UUID> {
     @Query("SELECT l FROM Lesson l WHERE (l.instructor.id = :userId OR l.learner.id = :userId) AND l.status = :status ORDER BY l.lessonDate ASC, l.startTime ASC")
     List<Lesson> findUserLessonsByStatus(@Param("userId") UUID userId, @Param("status") String status);
 }
+

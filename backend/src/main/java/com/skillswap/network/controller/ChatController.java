@@ -53,3 +53,4 @@ public class ChatController {
         return new ResponseEntity<>(ApiResponse.success("Message sent", sent), HttpStatus.CREATED);
     }
 }
+

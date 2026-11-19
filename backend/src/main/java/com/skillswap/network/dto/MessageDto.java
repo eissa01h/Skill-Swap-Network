@@ -39,3 +39,4 @@ public class MessageDto {
     public Instant getSentAt() { return sentAt; }
     public void setSentAt(Instant sentAt) { this.sentAt = sentAt; }
 }
+

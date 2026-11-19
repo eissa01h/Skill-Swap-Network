@@ -5,7 +5,7 @@ import { Card } from '../../components/ui/Card/Card';
 import { Button } from '../../components/ui/Button/Button';
 import { SkillTag } from '../../components/ui/SkillTag/SkillTag';
 import { Spinner } from '../../components/ui/Feedback/Spinner';
-import { matchService } from '../../services/mockApi';
+import { profileService } from '../../services/profileService';
 import { MOCK_REVIEWS } from '../../utils/mockData';
 
 export function PublicProfilePage() {
@@ -16,7 +16,7 @@ export function PublicProfilePage() {
   useEffect(() => {
     async function loadProfile() {
       try {
-        const data = await matchService.getPublicProfile(id);
+        const data = await profileService.getPublicProfile(id);
         setProfile(data);
       } finally {
         setLoading(false);

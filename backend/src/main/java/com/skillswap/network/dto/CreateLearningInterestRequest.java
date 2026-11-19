@@ -35,3 +35,4 @@ public class CreateLearningInterestRequest {
     public String getLearningGoals() { return learningGoals; }
     public void setLearningGoals(String learningGoals) { this.learningGoals = learningGoals; }
 }
+

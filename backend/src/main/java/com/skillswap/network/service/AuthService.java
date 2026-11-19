@@ -96,3 +96,4 @@ public class AuthService {
                 .orElseThrow(() -> new UnauthorizedException("User not authenticated or does not exist"));
     }
 }
+

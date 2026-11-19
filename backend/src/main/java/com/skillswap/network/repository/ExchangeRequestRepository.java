@@ -19,3 +19,4 @@ public interface ExchangeRequestRepository extends JpaRepository<ExchangeRequest
     @Query("SELECT r FROM ExchangeRequest r WHERE (r.sender.id = :userId OR r.recipient.id = :userId) AND r.status = :status")
     List<ExchangeRequest> findUserRequestsByStatus(@Param("userId") UUID userId, @Param("status") String status);
 }
+

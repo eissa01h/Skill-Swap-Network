@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { PublicLayout } from '../../layouts/PublicLayout';
 import { Button } from '../../components/ui/Button/Button';
 import { Input } from '../../components/ui/Input/Input';
@@ -11,20 +11,31 @@ export function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [sessionExpiredNotice, setSessionExpiredNotice] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const { login, loginAsMember, loginAsAdmin } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get('expired') === 'true') {
+      setSessionExpiredNotice(true);
+    }
+  }, [location]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setSessionExpiredNotice(false);
     setSubmitting(true);
     try {
-      await login({ email, password });
-      if (email.toLowerCase().includes('admin')) {
+      const res = await login({ email, password });
+      if (res.user?.role === 'ROLE_ADMIN' || email.toLowerCase().includes('admin')) {
         navigate('/admin');
       } else {
-        navigate('/app/dashboard');
+        const from = location.state?.from?.pathname || '/app/dashboard';
+        navigate(from);
       }
     } catch (err) {
       setError(err.message || 'Login failed. Please check your credentials.');
@@ -53,6 +64,20 @@ export function LoginPage() {
               Sign in to manage your skill swaps and messages
             </p>
           </div>
+
+          {sessionExpiredNotice && (
+            <div style={{
+              background: '#fef3c7',
+              border: '1px solid #f59e0b',
+              color: '#92400e',
+              padding: '10px 14px',
+              borderRadius: '8px',
+              fontSize: '13px',
+              marginBottom: '16px'
+            }}>
+              Your previous session has expired. Please log in again to continue.
+            </div>
+          )}
 
           <ErrorMessage message={error} />
 
@@ -103,4 +128,3 @@ export function LoginPage() {
     </PublicLayout>
   );
 }
-

@@ -32,3 +32,4 @@ public class AdminStatsDto {
     public String getDisputeResolutionRate() { return disputeResolutionRate; }
     public void setDisputeResolutionRate(String disputeResolutionRate) { this.disputeResolutionRate = disputeResolutionRate; }
 }
+

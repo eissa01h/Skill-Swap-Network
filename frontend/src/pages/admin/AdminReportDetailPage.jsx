@@ -5,7 +5,7 @@ import { Card } from '../../components/ui/Card/Card';
 import { Button } from '../../components/ui/Button/Button';
 import { StatusBadge } from '../../components/ui/Badge/StatusBadge';
 import { Spinner } from '../../components/ui/Feedback/Spinner';
-import { adminService } from '../../services/mockApi';
+import { adminService } from '../../services/adminService';
 
 export function AdminReportDetailPage() {
   const { id } = useParams();

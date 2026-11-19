@@ -6,7 +6,7 @@ import { Card } from '../../components/ui/Card/Card';
 import { StatusBadge } from '../../components/ui/Badge/StatusBadge';
 import { Button } from '../../components/ui/Button/Button';
 import { Spinner } from '../../components/ui/Feedback/Spinner';
-import { adminService } from '../../services/mockApi';
+import { adminService } from '../../services/adminService';
 
 export function AdminDashboardPage() {
   const [stats, setStats] = useState(null);

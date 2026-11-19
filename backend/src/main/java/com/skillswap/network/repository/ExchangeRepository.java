@@ -22,3 +22,4 @@ public interface ExchangeRepository extends JpaRepository<Exchange, UUID> {
 
     long countByStatus(String status);
 }
+

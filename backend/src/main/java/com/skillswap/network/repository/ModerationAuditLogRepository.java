@@ -11,3 +11,4 @@ import java.util.UUID;
 public interface ModerationAuditLogRepository extends JpaRepository<ModerationAuditLog, UUID> {
     List<ModerationAuditLog> findAllByOrderByCreatedAtDesc();
 }
+

@@ -71,3 +71,4 @@ public class LessonController {
         return ResponseEntity.ok(ApiResponse.success("Lesson cancelled", cancelled));
     }
 }
+
