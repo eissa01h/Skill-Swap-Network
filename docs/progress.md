@@ -123,11 +123,54 @@
 
 ---
 
-### ⏳ Next: Chunk 4 — Backend Database Integration & Spring Boot REST API
+### ✅ Chunk 4 — Database Design (COMPLETED)
+- **Status:** Complete
+- **Date Completed:** 2026-11-19
+- **Objectives Accomplished:**
+  1. **Comprehensive PostgreSQL Architecture:**
+     - Designed 3NF-compliant relational model supporting all 13 Functional Requirements (FR-01 to FR-13), 7 Non-Functional Requirements (NFR-01 to NFR-07), and 8 User Stories (US-01 to US-08).
+     - Defined 14 distinct entity tables:
+       1. `users` (credentials, BCrypt password hash, roles, account status)
+       2. `user_profiles` (1:1 with users, bio, location, availability, reputation metrics)
+       3. `skills` (master catalog with curated categories)
+       4. `teaching_skills` (skills offered with proficiency and experience)
+       5. `learning_interests` (skills desired with target level and priority)
+       6. `exchange_requests` (peer swap proposals with offered/requested skills and lifecycle state)
+       7. `exchanges` (contracted mutual swaps tracking planned/completed sessions and mutual completion verification)
+       8. `conversations` (1-on-1 direct channels with canonical user order to eliminate duplicate threads)
+       9. `messages` (in-conversation text exchanges with read receipts)
+       10. `lessons` (session scheduling with date, start time, duration, delivery method, and video room URL)
+       11. `ratings_feedback` (1-5 star peer reviews and qualitative feedback tied strictly to completed exchanges)
+       12. `reports` (community flags for commercial solicitation, harassment, or no-shows)
+       13. `moderation_audit_logs` (tamper-evident audit trail of administrative enforcements)
+       14. `notifications` (real-time alerts for requests, lessons, reviews, and warnings)
+  2. **Data Integrity & Constraint Hardening:**
+     - `UNIQUE (email)` on lowercase user emails.
+     - `UNIQUE (user_id, skill_id)` in `teaching_skills` preventing duplicate teaching listings.
+     - `UNIQUE (user_id, skill_id)` in `learning_interests` preventing duplicate learning goals.
+     - `UNIQUE (exchange_id, reviewer_id)` in `ratings_feedback` ensuring exactly one review per participant per exchange.
+     - `UNIQUE (user_one_id, user_two_id)` with `CHECK (user_one_id < user_two_id)` preventing duplicate conversation threads.
+     - `CHECK (sender_id <> recipient_id)` and `CHECK (offered_skill_id <> requested_skill_id)` on swap proposals.
+     - `CHECK (rating >= 1 AND rating <= 5)` and sub-ratings integrity.
+  3. **Exchange Lifecycle & Cancellation Rules Matrix:**
+     - Formal state machine documented for `PENDING` -> `ACCEPTED` / `DECLINED` / `CANCELLED` / `EXPIRED`.
+     - Explicit active exchange cancellation policy: mandatory reason, auto-cancels future scheduled lessons, blocks unearned completion reviews if zero sessions occurred.
+  4. **Strict Non-Monetary Policy (NFR-05):**
+     - Zero payment, credit, wallet, subscription, or currency columns.
+  5. **Flyway Migration Strategy:**
+     - Authored complete executable DDL migration script: `backend/src/main/resources/db/migration/V1__initial_schema.sql`.
+     - Added `flyway-core` and `flyway-database-postgresql` dependencies to `backend/pom.xml`.
+     - Configured `spring.jpa.hibernate.ddl-auto=validate` and Flyway migration runner in `application.properties`.
+  6. **Documentation & Verification:**
+     - Authored updated [docs/database-design.md](file:///c:/Users/AIRIN/OneDrive/Desktop/SE%20PRO/docs/database-design.md) with full ER diagrams (Mermaid), table schemas, lifecycle matrix, performance indexing strategy, and requirements traceability matrix.
+
+---
+
+### ⏳ Next: Chunk 5 — Backend Core Entities, Repositories & Database Integration
 - **Planned Objectives:**
-  1. Implement JPA Entity classes (`User`, `Skill`, `UserSkill`, `SwapRequest`, `Review`, `Notification`, `Report`).
-  2. Implement Spring Data JPA repositories with query methods for skills, swaps, matching reciprocity, and moderation.
-  3. Configure PostgreSQL / Supabase connection pooling and Hibernate DDL validation.
-  4. Implement database migration / schema creation scripts.
+  1. Implement JPA Entity classes matching the V1 schema (`User`, `UserProfile`, `Skill`, `TeachingSkill`, `LearningInterest`, `ExchangeRequest`, `Exchange`, `Conversation`, `Message`, `Lesson`, `RatingFeedback`, `Report`, `ModerationAuditLog`, `Notification`).
+  2. Implement Spring Data JPA repositories with query methods for skills, swaps, reciprocal matching, and pagination.
+  3. Connect PostgreSQL / Supabase live database connection.
+  4. Implement database migration verification test.
   5. Build Spring Boot REST Controllers and Services with validation and standard `ApiResponse<T>` envelopes.
   6. Connect Spring Security JWT authentication and BCrypt password hashing.
