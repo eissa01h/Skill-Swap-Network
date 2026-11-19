@@ -194,3 +194,4 @@ Real-time / in-app notifications alerting users to swap updates.
 - `CREATE INDEX idx_swap_requests_recipient ON swap_requests(recipient_id, status);`
 - `CREATE INDEX idx_reviews_reviewee ON reviews(reviewee_id);`
 - `CREATE INDEX idx_notifications_user_read ON notifications(user_id, is_read);`
+

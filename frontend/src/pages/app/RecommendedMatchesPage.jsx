@@ -1,24 +1,66 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AppLayout } from '../../layouts/AppLayout';
 import { MatchCard } from '../../components/ui/Card/MatchCard';
 import { Modal } from '../../components/ui/Modal/Modal';
 import { Button } from '../../components/ui/Button/Button';
 import { Textarea } from '../../components/ui/Input/Textarea';
-import { MOCK_MATCHES } from '../../utils/mockData';
+import { Spinner } from '../../components/ui/Feedback/Spinner';
+import { EmptyState } from '../../components/ui/Feedback/EmptyState';
+import { matchService, swapService } from '../../services/mockApi';
 
 export function RecommendedMatchesPage() {
+  const [matches, setMatches] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [selectedMatch, setSelectedMatch] = useState(null);
   const [proposalSent, setProposalSent] = useState(false);
   const [message, setMessage] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
 
-  const handleSendProposal = (e) => {
+  useEffect(() => {
+    const fetchMatches = async () => {
+      try {
+        setLoading(true);
+        const data = await matchService.getRecommendedMatches();
+        setMatches(data || []);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchMatches();
+  }, []);
+
+  const handleSendProposal = async (e) => {
     e.preventDefault();
-    setProposalSent(true);
-    setTimeout(() => {
-      setProposalSent(false);
-      setSelectedMatch(null);
-      setMessage('');
-    }, 1200);
+    if (!message.trim()) {
+      setErrorMsg('Please write a brief proposal message.');
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+      setErrorMsg('');
+      await swapService.createProposal({
+        partner: selectedMatch.user,
+        youOffer: selectedMatch.wantsFromYou,
+        youWant: selectedMatch.teachesYou,
+        message: message.trim(),
+        proposedSchedule: '1 session per week',
+      });
+
+      setProposalSent(true);
+      setTimeout(() => {
+        setProposalSent(false);
+        setSelectedMatch(null);
+        setMessage('');
+      }, 1500);
+    } catch (err) {
+      setErrorMsg(err.message || 'Failed to submit proposal.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -33,20 +75,33 @@ export function RecommendedMatchesPage() {
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: 'var(--space-6)' }}>
-        {MOCK_MATCHES.map(match => (
-          <MatchCard
-            key={match.id}
-            match={match}
-            onProposeSwap={(m) => setSelectedMatch(m)}
-          />
-        ))}
-      </div>
+      {loading ? (
+        <div style={{ display: 'flex', justifyContent: 'center', padding: 'var(--space-8)' }}>
+          <Spinner />
+        </div>
+      ) : matches.length === 0 ? (
+        <EmptyState
+          title="No reciprocal matches found yet"
+          description="Add more skills you can teach and skills you want to learn to increase match opportunities."
+          actionText="Add Teaching Skills"
+          onAction={() => window.location.href = '/app/teaching'}
+        />
+      ) : (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: 'var(--space-6)' }}>
+          {matches.map(match => (
+            <MatchCard
+              key={match.id}
+              match={match}
+              onProposeSwap={(m) => { setErrorMsg(''); setSelectedMatch(m); }}
+            />
+          ))}
+        </div>
+      )}
 
       {/* Propose Swap Modal */}
       <Modal
         isOpen={!!selectedMatch}
-        onClose={() => setSelectedMatch(null)}
+        onClose={() => { setSelectedMatch(null); setErrorMsg(''); }}
         title={`Request Skill Swap with ${selectedMatch?.user?.name}`}
       >
         {proposalSent ? (
@@ -54,11 +109,17 @@ export function RecommendedMatchesPage() {
             <div style={{ fontSize: '2rem', marginBottom: 'var(--space-2)' }}>🎉</div>
             <h4 style={{ fontWeight: 700 }}>Proposal Successfully Delivered!</h4>
             <p style={{ fontSize: 'var(--font-size-sm)', marginTop: '4px' }}>
-              {selectedMatch?.user?.name} will receive a notification to review and accept your swap.
+              {selectedMatch?.user?.name} will receive a notification to review and accept your swap. Check your Outgoing Requests tab anytime.
             </p>
           </div>
         ) : (
           <form onSubmit={handleSendProposal} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+            {errorMsg && (
+              <div style={{ padding: '0.75rem', backgroundColor: '#fef2f2', color: '#b91c1c', borderRadius: 'var(--radius-md)', fontSize: 'var(--font-size-sm)' }}>
+                {errorMsg}
+              </div>
+            )}
+
             <div style={{ padding: 'var(--space-3)', backgroundColor: 'var(--color-slate-50)', borderRadius: 'var(--radius-md)', fontSize: 'var(--font-size-xs)' }}>
               <div><strong>Exchange:</strong> {selectedMatch?.teachesYou} ⇄ {selectedMatch?.wantsFromYou}</div>
               <div style={{ marginTop: '2px', color: 'var(--text-muted)' }}>Compatibility Score: {selectedMatch?.matchScore}%</div>
@@ -74,11 +135,11 @@ export function RecommendedMatchesPage() {
             />
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)', marginTop: 'var(--space-2)' }}>
-              <Button variant="outline" onClick={() => setSelectedMatch(null)}>
+              <Button variant="outline" type="button" onClick={() => setSelectedMatch(null)}>
                 Cancel
               </Button>
-              <Button type="submit" variant="primary">
-                Send Swap Request
+              <Button type="submit" variant="primary" disabled={submitting}>
+                {submitting ? 'Sending...' : 'Send Swap Request'}
               </Button>
             </div>
           </form>
@@ -87,3 +148,5 @@ export function RecommendedMatchesPage() {
     </AppLayout>
   );
 }
+
+export default RecommendedMatchesPage;

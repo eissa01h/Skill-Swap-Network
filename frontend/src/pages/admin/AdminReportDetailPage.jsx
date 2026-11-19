@@ -1,29 +1,72 @@
-import React, { useState } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useParams, Link } from 'react-router-dom';
 import { AdminLayout } from '../../layouts/AdminLayout';
 import { Card } from '../../components/ui/Card/Card';
 import { Button } from '../../components/ui/Button/Button';
 import { StatusBadge } from '../../components/ui/Badge/StatusBadge';
-import { MOCK_ADMIN_REPORTS } from '../../utils/mockData';
+import { Spinner } from '../../components/ui/Feedback/Spinner';
+import { adminService } from '../../services/mockApi';
 
 export function AdminReportDetailPage() {
   const { id } = useParams();
-  const navigate = useNavigate();
-  const report = MOCK_ADMIN_REPORTS.find(r => r.id === id) || MOCK_ADMIN_REPORTS[0];
-
-  const [status, setStatus] = useState(report.status);
+  const [report, setReport] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [actionNotice, setActionNotice] = useState(null);
 
-  const handleAction = (type) => {
-    setStatus('RESOLVED');
-    if (type === 'BAN') {
-      setActionNotice(`User ${report.reportedUser.name} has been banned and their listings removed.`);
-    } else if (type === 'WARN') {
-      setActionNotice(`Official warning sent to ${report.reportedUser.name}.`);
-    } else {
-      setActionNotice('Report has been reviewed and dismissed.');
+  const loadReport = async () => {
+    try {
+      setLoading(true);
+      const reports = await adminService.getReports();
+      const found = reports.find(r => r.id === id) || reports[0];
+      setReport(found);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
     }
   };
+
+  useEffect(() => {
+    loadReport();
+  }, [id]);
+
+  const handleAction = async (type) => {
+    if (!report) return;
+
+    let desc = '';
+    if (type === 'BAN') {
+      desc = `User ${report.reportedUser.name} has been blocked and listings taken down.`;
+      await adminService.toggleUserBlock(report.reportedUser.id);
+    } else if (type === 'WARN') {
+      desc = `Official community warning issued to ${report.reportedUser.name}.`;
+    } else {
+      desc = 'Report dismissed as non-violating after manual review.';
+    }
+
+    await adminService.resolveReport(report.id, desc);
+    setActionNotice(desc);
+    await loadReport();
+  };
+
+  if (loading) {
+    return (
+      <AdminLayout title="Incident Investigation" subtitle="Loading report details...">
+        <div style={{ display: 'flex', justifyContent: 'center', padding: 'var(--space-8)' }}>
+          <Spinner />
+        </div>
+      </AdminLayout>
+    );
+  }
+
+  if (!report) {
+    return (
+      <AdminLayout title="Report Not Found" subtitle="The requested report does not exist.">
+        <Link to="/admin/reports">
+          <Button variant="outline">← Back to Queue</Button>
+        </Link>
+      </AdminLayout>
+    );
+  }
 
   return (
     <AdminLayout
@@ -48,7 +91,7 @@ export function AdminReportDetailPage() {
             <div>
               <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Current Standing</span>
               <div style={{ marginTop: '4px' }}>
-                <StatusBadge status={status} />
+                <StatusBadge status={report.status} />
               </div>
             </div>
             <div>
@@ -115,3 +158,5 @@ export function AdminReportDetailPage() {
     </AdminLayout>
   );
 }
+
+export default AdminReportDetailPage;

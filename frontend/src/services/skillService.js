@@ -1,27 +1,13 @@
-import { apiRequest } from './api';
+import { skillService as mockSkills } from './mockApi';
 
 export const skillService = {
-  async getAllMasterSkills() {
-    return apiRequest('/skills');
-  },
+  getTeachingSkills: () => mockSkills.getTeachingSkills(),
+  addTeachingSkill: (skill) => mockSkills.addTeachingSkill(skill),
+  updateTeachingSkill: (id, updates) => mockSkills.updateTeachingSkill(id, updates),
+  deleteTeachingSkill: (id) => mockSkills.deleteTeachingSkill(id),
 
-  async searchSkills(query, category) {
-    const params = new URLSearchParams();
-    if (query) params.append('query', query);
-    if (category) params.append('category', category);
-    return apiRequest(`/skills/search?${params.toString()}`);
-  },
-
-  async getUserSkills() {
-    return apiRequest('/user-skills/me');
-  },
-
-  async addUserSkill(skillData) {
-    return apiRequest('/user-skills', { method: 'POST', data: skillData });
-  },
-
-  async removeUserSkill(id) {
-    return apiRequest(`/user-skills/${id}`, { method: 'DELETE' });
-  },
+  getLearningInterests: () => mockSkills.getLearningInterests(),
+  addLearningInterest: (interest) => mockSkills.addLearningInterest(interest),
+  updateLearningInterest: (id, updates) => mockSkills.updateLearningInterest(id, updates),
+  deleteLearningInterest: (id) => mockSkills.deleteLearningInterest(id),
 };
-

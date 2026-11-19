@@ -22,3 +22,4 @@ public class HealthController {
         return ResponseEntity.ok(ApiResponse.success("System operational", health));
     }
 }
+

@@ -9,3 +9,4 @@ class SkillSwapNetworkApplicationTests {
         // Basic configuration test
     }
 }
+

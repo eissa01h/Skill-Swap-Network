@@ -27,3 +27,4 @@ export function AdminLayout({ children, title, subtitle, actions }) {
     </div>
   );
 }
+

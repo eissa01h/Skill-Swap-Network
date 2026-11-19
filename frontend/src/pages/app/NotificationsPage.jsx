@@ -73,3 +73,4 @@ export function NotificationsPage() {
     </AppLayout>
   );
 }
+

@@ -104,3 +104,4 @@ Skill Swap Network is designed around a strictly decoupled **Three-Layer Archite
 1. **No Hardcoded Credentials:** All credentials (database URLs, passwords, JWT secret keys) are ingested from `.env` files or runtime environment variables.
 2. **CORS Policy:** Strict CORS configuration permitting communication exclusively between the configured frontend origin (`http://localhost:5173` in development) and backend API.
 3. **Stateless JWT Flow:** Client transmits JWT in the HTTP `Authorization: Bearer <token>` header on every protected endpoint request.
+

@@ -146,3 +146,4 @@ export function Sidebar({ isAdmin = false }) {
     </aside>
   );
 }
+

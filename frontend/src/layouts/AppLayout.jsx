@@ -24,3 +24,4 @@ export function AppLayout({ children, title, subtitle, actions }) {
     </div>
   );
 }
+

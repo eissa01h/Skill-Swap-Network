@@ -88,3 +88,4 @@ VITE_API_BASE_URL=http://localhost:8080/api/v1
 ## 5. Independent Development Workflow
 - **Frontend Independence:** The React application can be developed and styled with mock data services or against the running Spring Boot API. Vite proxy or CORS allows seamless local development.
 - **Backend Independence:** The Spring Boot REST API can be tested independently using curl, Postman, or unit/integration tests without running the frontend.
+

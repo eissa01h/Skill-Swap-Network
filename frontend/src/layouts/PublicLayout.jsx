@@ -11,3 +11,4 @@ export function PublicLayout({ children }) {
     </div>
   );
 }
+

@@ -102,3 +102,4 @@ All API endpoints return JSON conforming to the standard envelope:
 | `GET` | `/api/v1/notifications` | Yes | Fetch unread and recent user notifications |
 | `PATCH` | `/api/v1/notifications/{id}/read` | Yes | Mark a single notification as read |
 | `PATCH` | `/api/v1/notifications/mark-all-read` | Yes | Mark all notifications as read |
+

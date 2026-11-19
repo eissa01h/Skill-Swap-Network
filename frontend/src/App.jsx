@@ -8,6 +8,7 @@ import { AboutPage } from './pages/public/AboutPage';
 import { HowItWorksPage } from './pages/public/HowItWorksPage';
 import { LoginPage } from './pages/public/LoginPage';
 import { RegisterPage } from './pages/public/RegisterPage';
+import { PublicProfilePage } from './pages/public/PublicProfilePage';
 
 // Authenticated Application Pages
 import { DashboardPage } from './pages/app/DashboardPage';
@@ -42,6 +43,7 @@ export function App() {
           <Route path="/how-it-works" element={<HowItWorksPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/user/:id" element={<PublicProfilePage />} />
 
           {/* Authenticated Member App Routes */}
           <Route path="/app/dashboard" element={<DashboardPage />} />

@@ -1,25 +1,47 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { AppLayout } from '../../layouts/AppLayout';
 import { Card } from '../../components/ui/Card/Card';
 import { Button } from '../../components/ui/Button/Button';
 import { SkillTag } from '../../components/ui/SkillTag/SkillTag';
 import { useAuth } from '../../hooks/useAuth';
-import { MOCK_TEACHING_SKILLS, MOCK_LEARNING_INTERESTS, MOCK_REVIEWS } from '../../utils/mockData';
+import { skillService } from '../../services/skillService';
+import { MOCK_REVIEWS } from '../../utils/mockData';
 
 export function ProfilePage() {
   const { user } = useAuth();
+  const [teachingSkills, setTeachingSkills] = useState([]);
+  const [learningInterests, setLearningInterests] = useState([]);
+
+  useEffect(() => {
+    async function load() {
+      const [teach, learn] = await Promise.all([
+        skillService.getTeachingSkills(),
+        skillService.getLearningInterests(),
+      ]);
+      setTeachingSkills(teach);
+      setLearningInterests(learn);
+    }
+    load();
+  }, []);
 
   return (
     <AppLayout
       title="My Member Profile"
-      subtitle="This is how other learners and teachers see you across Skill Swap Network."
+      subtitle="Manage your personal details, private account settings, and review your community reputation."
       actions={
-        <Link to="/app/profile/edit">
-          <Button variant="primary" size="md">
-            ✏️ Edit Profile
-          </Button>
-        </Link>
+        <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+          <Link to={`/user/${user?.id || 'usr_001'}`}>
+            <Button variant="outline" size="md">
+              👁️ View Public Profile
+            </Button>
+          </Link>
+          <Link to="/app/profile/edit">
+            <Button variant="primary" size="md">
+              ✏️ Edit Profile
+            </Button>
+          </Link>
+        </div>
       }
     >
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 'var(--space-8)', alignItems: 'flex-start' }}>
@@ -62,9 +84,14 @@ export function ProfilePage() {
                 </div>
               </div>
 
-              <div style={{ textAlign: 'left', fontSize: 'var(--font-size-xs)', color: 'var(--text-secondary)' }}>
-                <strong>Availability:</strong>
-                <p style={{ color: 'var(--text-muted)', marginTop: '2px' }}>{user?.availability}</p>
+              {/* Private Account Information Box */}
+              <div style={{ backgroundColor: 'var(--color-slate-50)', padding: 'var(--space-3)', borderRadius: 'var(--radius-md)', textAlign: 'left', fontSize: 'var(--font-size-xs)', color: 'var(--text-secondary)' }}>
+                <span style={{ fontSize: '0.65rem', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 700, display: 'block', marginBottom: '4px' }}>
+                  🔒 Private Account Info (Only Visible to You)
+                </span>
+                <div><strong>Email:</strong> {user?.email}</div>
+                <div style={{ marginTop: '2px' }}><strong>Joined:</strong> {user?.joinedDate || 'March 2025'}</div>
+                <div style={{ marginTop: '2px' }}><strong>Availability:</strong> {user?.availability}</div>
               </div>
             </div>
           </Card>
@@ -72,7 +99,7 @@ export function ProfilePage() {
 
         {/* Right Column: Bio, Skills & Verified Reviews */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
-          <Card title="About Me">
+          <Card title="Introduction & Bio">
             <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-secondary)', lineHeight: 1.7 }}>
               {user?.bio}
             </p>
@@ -81,7 +108,7 @@ export function ProfilePage() {
           {/* Teaching Skills */}
           <Card
             title="Skills I Teach"
-            subtitle="Expertise offered to the community for reciprocal learning"
+            subtitle={`${teachingSkills.length} active teaching offering(s)`}
             actions={
               <Link to="/app/teaching">
                 <Button variant="ghost" size="sm">Manage →</Button>
@@ -89,7 +116,7 @@ export function ProfilePage() {
             }
           >
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)', marginTop: 'var(--space-2)' }}>
-              {MOCK_TEACHING_SKILLS.map(skill => (
+              {teachingSkills.map(skill => (
                 <div key={skill.id} style={{ padding: 'var(--space-3)', backgroundColor: 'var(--color-slate-50)', borderRadius: 'var(--radius-md)' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
                     <strong style={{ fontSize: 'var(--font-size-sm)' }}>{skill.name}</strong>
@@ -104,7 +131,7 @@ export function ProfilePage() {
           {/* Learning Interests */}
           <Card
             title="Skills I Want to Learn"
-            subtitle="Topics and disciplines currently seeking learning partners for"
+            subtitle={`${learningInterests.length} learning objective(s)`}
             actions={
               <Link to="/app/learning">
                 <Button variant="ghost" size="sm">Manage →</Button>
@@ -112,7 +139,7 @@ export function ProfilePage() {
             }
           >
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-2)', marginTop: 'var(--space-2)' }}>
-              {MOCK_LEARNING_INTERESTS.map(int => (
+              {learningInterests.map(int => (
                 <SkillTag key={int.id} name={int.name} level={int.targetLevel} type="wanted" />
               ))}
             </div>

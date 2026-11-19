@@ -10,3 +10,4 @@ public class SkillSwapNetworkApplication {
         SpringApplication.run(SkillSwapNetworkApplication.class, args);
     }
 }
+

@@ -1,32 +1,12 @@
-import { apiRequest } from './api';
+import { swapService as mockSwap } from './mockApi';
 
 export const swapService = {
-  async getSentRequests() {
-    return apiRequest('/swaps/sent');
-  },
-
-  async getReceivedRequests() {
-    return apiRequest('/swaps/received');
-  },
-
-  async createSwapRequest(swapData) {
-    return apiRequest('/swaps', { method: 'POST', data: swapData });
-  },
-
-  async acceptSwapRequest(id) {
-    return apiRequest(`/swaps/${id}/accept`, { method: 'PATCH' });
-  },
-
-  async declineSwapRequest(id) {
-    return apiRequest(`/swaps/${id}/decline`, { method: 'PATCH' });
-  },
-
-  async completeSwapRequest(id) {
-    return apiRequest(`/swaps/${id}/complete`, { method: 'PATCH' });
-  },
-
-  async cancelSwapRequest(id) {
-    return apiRequest(`/swaps/${id}/cancel`, { method: 'PATCH' });
-  },
+  getIncomingRequests: () => mockSwap.getIncomingRequests(),
+  getOutgoingRequests: () => mockSwap.getOutgoingRequests(),
+  createProposal: (data) => mockSwap.createProposal(data),
+  acceptRequest: (id) => mockSwap.acceptRequest(id),
+  declineRequest: (id) => mockSwap.declineRequest(id),
+  cancelRequest: (id) => mockSwap.cancelRequest(id),
+  getActiveExchanges: () => mockSwap.getActiveExchanges(),
+  completeExchange: (id) => mockSwap.completeExchange(id),
 };
-
