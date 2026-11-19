@@ -24,3 +24,4 @@ export function useFetch(fetchFn, deps = []) {
 
   return { data, loading, error, refetch: execute };
 }
+

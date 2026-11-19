@@ -1,0 +1,117 @@
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { AppLayout } from '../../layouts/AppLayout';
+import { Card } from '../../components/ui/Card/Card';
+import { Input } from '../../components/ui/Input/Input';
+import { Textarea } from '../../components/ui/Input/Textarea';
+import { Button } from '../../components/ui/Button/Button';
+import { useAuth } from '../../hooks/useAuth';
+
+export function EditProfilePage() {
+  const { user, setUser } = useAuth();
+  const navigate = useNavigate();
+
+  const [formData, setFormData] = useState({
+    fullName: user?.fullName || '',
+    title: user?.title || '',
+    location: user?.location || '',
+    availability: user?.availability || '',
+    bio: user?.bio || '',
+    avatarUrl: user?.avatarUrl || '',
+  });
+
+  const [savedSuccess, setSavedSuccess] = useState(false);
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setUser({ ...user, ...formData });
+    setSavedSuccess(true);
+    setTimeout(() => {
+      setSavedSuccess(false);
+      navigate('/app/profile');
+    }, 800);
+  };
+
+  return (
+    <AppLayout
+      title="Edit Profile"
+      subtitle="Update your public presentation, bio, and scheduling availability."
+    >
+      <div style={{ maxWidth: '680px' }}>
+        <Card>
+          {savedSuccess && (
+            <div style={{ padding: 'var(--space-3)', backgroundColor: 'var(--color-success-bg)', color: 'var(--color-success-text)', borderRadius: 'var(--radius-md)', marginBottom: 'var(--space-4)', fontSize: 'var(--font-size-sm)', fontWeight: 600 }}>
+              ✓ Profile changes saved successfully! Redirecting...
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
+              <Input
+                label="Full Name"
+                name="fullName"
+                required
+                value={formData.fullName}
+                onChange={handleChange}
+              />
+              <Input
+                label="Location / Timezone"
+                name="location"
+                placeholder="e.g. San Francisco, CA (PST)"
+                value={formData.location}
+                onChange={handleChange}
+              />
+            </div>
+
+            <Input
+              label="Professional Title or Tagline"
+              name="title"
+              placeholder="e.g. Full-Stack Engineer & Amateur Pianist"
+              value={formData.title}
+              onChange={handleChange}
+            />
+
+            <Input
+              label="Profile Picture URL"
+              name="avatarUrl"
+              placeholder="https://..."
+              value={formData.avatarUrl}
+              onChange={handleChange}
+              helperText="Paste any valid image URL or keep default avatar."
+            />
+
+            <Input
+              label="Weekly Availability"
+              name="availability"
+              placeholder="e.g. Weekday evenings (after 6 PM) and Saturday mornings"
+              value={formData.availability}
+              onChange={handleChange}
+              helperText="Helps the match engine align overlapping schedules."
+            />
+
+            <Textarea
+              label="Bio & Swap Goals"
+              name="bio"
+              rows={4}
+              value={formData.bio}
+              onChange={handleChange}
+            />
+
+            <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end', marginTop: 'var(--space-2)' }}>
+              <Button variant="outline" onClick={() => navigate('/app/profile')}>
+                Cancel
+              </Button>
+              <Button type="submit" variant="primary">
+                Save Profile
+              </Button>
+            </div>
+          </form>
+        </Card>
+      </div>
+    </AppLayout>
+  );
+}

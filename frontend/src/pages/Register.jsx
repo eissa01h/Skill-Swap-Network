@@ -132,3 +132,4 @@ export function Register() {
     </div>
   );
 }
+

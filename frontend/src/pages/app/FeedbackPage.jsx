@@ -1,0 +1,134 @@
+import React, { useState } from 'react';
+import { AppLayout } from '../../layouts/AppLayout';
+import { Card } from '../../components/ui/Card/Card';
+import { Button } from '../../components/ui/Button/Button';
+import { Modal } from '../../components/ui/Modal/Modal';
+import { Select } from '../../components/ui/Select/Select';
+import { Textarea } from '../../components/ui/Input/Textarea';
+import { MOCK_REVIEWS } from '../../utils/mockData';
+
+export function FeedbackPage() {
+  const [reviews, setReviews] = useState(MOCK_REVIEWS);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [newReview, setNewReview] = useState({
+    partner: 'Carlos Rodriguez',
+    skill: 'Conversational Spanish',
+    rating: 5,
+    comment: '',
+  });
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!newReview.comment.trim()) return;
+
+    setReviews([
+      {
+        id: `rev_${Date.now()}`,
+        authorName: 'You (Sarah Chen)',
+        authorAvatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&auto=format&fit=crop&q=80',
+        skillTaught: newReview.skill,
+        rating: Number(newReview.rating),
+        date: 'Just now',
+        comment: newReview.comment,
+      },
+      ...reviews,
+    ]);
+    setNewReview({
+      partner: 'Carlos Rodriguez',
+      skill: 'Conversational Spanish',
+      rating: 5,
+      comment: '',
+    });
+    setModalOpen(false);
+  };
+
+  return (
+    <AppLayout
+      title="Ratings & Reviews"
+      subtitle="Verified post-swap peer testimonials building trust in the community."
+      actions={
+        <Button variant="primary" size="md" onClick={() => setModalOpen(true)}>
+          ⭐ Leave a Review
+        </Button>
+      }
+    >
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 'var(--space-6)' }}>
+        {reviews.map(rev => (
+          <Card key={rev.id}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', marginBottom: 'var(--space-3)' }}>
+              <img
+                src={rev.authorAvatar}
+                alt={rev.authorName}
+                style={{ width: '44px', height: '44px', borderRadius: '50%', objectFit: 'cover' }}
+              />
+              <div style={{ flex: 1 }}>
+                <h4 style={{ fontSize: 'var(--font-size-sm)', fontWeight: 700 }}>{rev.authorName}</h4>
+                <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-primary-600)', fontWeight: 600 }}>
+                  Skill: {rev.skillTaught}
+                </div>
+              </div>
+              <div style={{ fontSize: 'var(--font-size-md)', fontWeight: 700, color: '#f59e0b' }}>
+                ⭐ {rev.rating}.0
+              </div>
+            </div>
+
+            <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-secondary)', fontStyle: 'italic', marginBottom: 'var(--space-3)', lineHeight: 1.6 }}>
+              "{rev.comment}"
+            </p>
+
+            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textAlign: 'right' }}>
+              Verified Session • {rev.date}
+            </div>
+          </Card>
+        ))}
+      </div>
+
+      {/* Leave Review Modal */}
+      <Modal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        title="Submit Swap Feedback"
+      >
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+          <Select
+            label="Swap Partner to Review"
+            options={['Carlos Rodriguez', 'Elena Rostova']}
+            value={newReview.partner}
+            onChange={(e) => setNewReview({ ...newReview, partner: e.target.value })}
+          />
+
+          <Select
+            label="Rating (1 to 5 Stars)"
+            options={[
+              { value: 5, label: '⭐⭐⭐⭐⭐ — 5 Stars (Exceptional)' },
+              { value: 4, label: '⭐⭐⭐⭐ — 4 Stars (Very Good)' },
+              { value: 3, label: '⭐⭐⭐ — 3 Stars (Satisfactory)' },
+              { value: 2, label: '⭐⭐ — 2 Stars (Needs Improvement)' },
+              { value: 1, label: '⭐ — 1 Star (Unsatisfactory)' },
+            ]}
+            value={newReview.rating}
+            onChange={(e) => setNewReview({ ...newReview, rating: e.target.value })}
+          />
+
+          <Textarea
+            label="Detailed Feedback & Recommendation"
+            required
+            rows={4}
+            placeholder="How was your partner's punctuality, teaching clarity, and preparation?"
+            value={newReview.comment}
+            onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })}
+          />
+
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)', marginTop: 'var(--space-2)' }}>
+            <Button variant="outline" onClick={() => setModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" variant="primary">
+              Post Review
+            </Button>
+          </div>
+        </form>
+      </Modal>
+    </AppLayout>
+  );
+}

@@ -24,3 +24,4 @@ export const STORAGE_KEYS = {
   AUTH_TOKEN: 'skill_swap_auth_token',
   USER_DATA: 'skill_swap_user_data',
 };
+

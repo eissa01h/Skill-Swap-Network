@@ -19,3 +19,4 @@ export function Card({ title, subtitle, children, style = {}, onClick }) {
     </div>
   );
 }
+

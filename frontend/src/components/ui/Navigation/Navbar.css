@@ -1,0 +1,109 @@
+.app-navbar {
+  background-color: var(--bg-surface);
+  border-bottom: 1px solid var(--border-subtle);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(8px);
+}
+
+.demo-role-banner {
+  background-color: var(--color-slate-900);
+  color: var(--text-inverse);
+  padding: 0.35rem var(--space-4);
+  font-size: var(--font-size-xs);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.demo-role-badges {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.demo-role-btn {
+  padding: 0.15rem 0.5rem;
+  font-size: 0.7rem;
+  border-radius: var(--radius-sm);
+  background-color: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  transition: all var(--transition-fast);
+}
+
+.demo-role-btn.active {
+  background-color: var(--color-accent-500);
+  color: #fff;
+  font-weight: 600;
+}
+
+.navbar-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--header-height);
+}
+
+.navbar-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-slate-900);
+  text-decoration: none;
+}
+
+.brand-icon {
+  width: 34px;
+  height: 34px;
+  background: linear-gradient(135deg, var(--color-primary-600), var(--color-accent-600));
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.navbar-nav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+  list-style: none;
+}
+
+.nav-link {
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  transition: color var(--transition-fast);
+  text-decoration: none;
+}
+
+.nav-link:hover, .nav-link.active {
+  color: var(--color-primary-600);
+}
+
+.navbar-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.mobile-menu-toggle {
+  display: none;
+  font-size: 1.5rem;
+  color: var(--text-primary);
+}
+
+@media (max-width: 900px) {
+  .navbar-nav {
+    display: none;
+  }
+  .mobile-menu-toggle {
+    display: block;
+  }
+}

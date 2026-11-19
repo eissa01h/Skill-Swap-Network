@@ -24,3 +24,4 @@ export const skillService = {
     return apiRequest(`/user-skills/${id}`, { method: 'DELETE' });
   },
 };
+
