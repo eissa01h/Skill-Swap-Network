@@ -39,6 +39,10 @@ public class SecurityConfig {
         http
                 .cors(Customizer.withDefaults())
                 .csrf(csrf -> csrf.disable())
+                .headers(headers -> headers
+                        .frameOptions(frame -> frame.deny())
+                        .contentTypeOptions(Customizer.withDefaults())
+                )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         // Public authentication & registration
