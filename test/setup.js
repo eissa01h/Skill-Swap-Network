@@ -13,3 +13,4 @@ if (!globalThis.localStorage) {
 export function resetStorage() {
   storageMap.clear();
 }
+

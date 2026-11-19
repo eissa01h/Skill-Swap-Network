@@ -109,3 +109,4 @@ Verified across modern standards-compliant browser engines and responsive viewpo
   - `dist/assets/index-*.css`: **5.15 kB**
   - `dist/assets/index-*.js`: **93.53 kB**
   - **Total Compressed Payload:** $\approx \mathbf{99.7\text{ kB}}$ (Well below the 350 kB university project threshold).
+

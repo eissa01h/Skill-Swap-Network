@@ -1,0 +1,29 @@
+services:
+  # -------------------------------------------------------------
+  # Backend Spring Boot Web Service (Render Free Tier)
+  # -------------------------------------------------------------
+  - type: web
+    name: skill-swap-network-backend
+    env: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: free
+    region: oregon
+    healthCheckPath: /api-docs
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: SERVER_PORT
+        value: 8080
+      - key: DB_URL
+        sync: false # Set in Render Dashboard: jdbc:postgresql://<SUPABASE_HOST>:5432/postgres?sslmode=require
+      - key: DB_USERNAME
+        sync: false # Set in Render Dashboard: postgres
+      - key: DB_PASSWORD
+        sync: false # Set in Render Dashboard: <YOUR_SUPABASE_PASSWORD>
+      - key: JWT_SECRET
+        generateValue: true # Render automatically generates a cryptographically secure 256-bit random string
+      - key: JWT_EXPIRATION_MS
+        value: "86400000"
+      - key: CLIENT_ORIGIN
+        sync: false # Set in Render Dashboard: https://skill-swap-network.pages.dev

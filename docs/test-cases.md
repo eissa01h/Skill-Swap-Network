@@ -132,3 +132,4 @@
 | **TC-NFR05-01** | Maintainability | Clean layered architecture, modular services, zero direct DB leaks. | ✅ PASS |
 | **TC-NFR06-01** | Responsive Design | Design tokens, viewport breakpoints for desktop, tablet, and mobile. | ✅ PASS |
 | **TC-NFR07-01** | Non-Monetary Constraint| Zero payment gateways, wallets, fees, or currency fields in schema/API. | ✅ PASS |
+
