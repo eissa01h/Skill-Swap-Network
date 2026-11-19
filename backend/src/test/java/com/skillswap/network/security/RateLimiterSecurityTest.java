@@ -65,3 +65,4 @@ public class RateLimiterSecurityTest {
         assertTrue(rateLimiterService.isAllowed(clientIp, 1, 60), "After reset, client should be permitted");
     }
 }
+

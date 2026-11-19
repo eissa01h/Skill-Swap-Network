@@ -112,3 +112,4 @@ public class RoleBasedAuthorizationTest {
         assertFalse(userDetails.isEnabled(), "Blocked user accounts must have isEnabled() == false");
     }
 }
+

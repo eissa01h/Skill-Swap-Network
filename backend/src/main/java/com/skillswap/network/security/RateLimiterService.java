@@ -9,7 +9,8 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * Thread-safe Sliding Window Rate Limiter for sensitive endpoints.
- * Defends against brute-force password attacks, automated spam registration, and credential stuffing.
+ * Defends against brute-force password attacks, automated spam registration,
+ * and credential stuffing.
  */
 @Service
 public class RateLimiterService {
@@ -38,7 +39,8 @@ public class RateLimiterService {
         long now = Instant.now().getEpochSecond();
         long windowStart = now - windowSeconds;
 
-        ConcurrentLinkedQueue<Long> timestamps = requestHistory.computeIfAbsent(clientKey, k -> new ConcurrentLinkedQueue<>());
+        ConcurrentLinkedQueue<Long> timestamps = requestHistory.computeIfAbsent(clientKey,
+                k -> new ConcurrentLinkedQueue<>());
 
         // Evict timestamps older than the sliding window
         while (!timestamps.isEmpty() && timestamps.peek() <= windowStart) {

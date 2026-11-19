@@ -148,3 +148,4 @@ The backend includes comprehensive JUnit 5 and Mockito test suites covering all 
 | `MatchingServiceTest` | `src/test/java/.../service/` | Reciprocal barter matching algorithm scoring and rationale generation. |
 
 All tests pass cleanly conforming to standard Java 17 and Spring Boot 3.3.5 specifications.
+

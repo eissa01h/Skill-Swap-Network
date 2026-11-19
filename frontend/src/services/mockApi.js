@@ -13,7 +13,7 @@ import {
   MOCK_ADMIN_STATS,
   MOCK_ADMIN_USERS,
   MOCK_ADMIN_REPORTS,
-} from '../utils/mockData';
+} from '../utils/mockData.js';
 
 const STORAGE_KEYS = {
   USER: 'ssn_user',
@@ -106,6 +106,9 @@ export const skillService = {
   },
 
   async addTeachingSkill(skill) {
+    if (!skill || !skill.name || !skill.name.trim()) {
+      throw new Error('Skill name is required.');
+    }
     const list = getStored(STORAGE_KEYS.TEACHING_SKILLS, MOCK_TEACHING_SKILLS);
     const normalizedName = skill.name.trim().toLowerCase();
 
@@ -148,6 +151,9 @@ export const skillService = {
   },
 
   async addLearningInterest(interest) {
+    if (!interest || !interest.name || !interest.name.trim()) {
+      throw new Error('Learning goal name is required.');
+    }
     const list = getStored(STORAGE_KEYS.LEARNING_INTERESTS, MOCK_LEARNING_INTERESTS);
     const normalizedName = interest.name.trim().toLowerCase();
 

@@ -68,16 +68,19 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ErrorResponse> handleAccessDeniedException(AccessDeniedException ex) {
-        return new ResponseEntity<>(new ErrorResponse("Access denied: You do not have permission to perform this action."), HttpStatus.FORBIDDEN);
+        return new ResponseEntity<>(
+                new ErrorResponse("Access denied: You do not have permission to perform this action."),
+                HttpStatus.FORBIDDEN);
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGlobalException(Exception ex) {
         logger.error("Unhandled internal server exception: ", ex);
-        // Secure sanitization: Never expose internal database/stack trace messages to clients (CWE-209)
+        // Secure sanitization: Never expose internal database/stack trace messages to
+        // clients (CWE-209)
         return new ResponseEntity<>(
-                new ErrorResponse("An unexpected server error occurred. Please try again later or contact administrator."),
-                HttpStatus.INTERNAL_SERVER_ERROR
-        );
+                new ErrorResponse(
+                        "An unexpected server error occurred. Please try again later or contact administrator."),
+                HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }
