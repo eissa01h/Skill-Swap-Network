@@ -9,7 +9,13 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
     try {
       const stored = localStorage.getItem(STORAGE_KEYS.USER_DATA);
-      return stored ? JSON.parse(stored) : MOCK_CURRENT_USER;
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed && typeof parsed === 'object') {
+          return { ...MOCK_CURRENT_USER, ...parsed };
+        }
+      }
+      return MOCK_CURRENT_USER;
     } catch {
       return MOCK_CURRENT_USER;
     }

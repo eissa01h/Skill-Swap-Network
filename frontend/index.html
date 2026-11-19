@@ -2,16 +2,31 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Skill Swap Network — Learn & Teach Together</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+      window.addEventListener('error', function(event) {
+        console.error('Window error detected:', event);
+        var root = document.getElementById('root');
+        if (root && (!root.children || root.children.length === 0)) {
+          var errDiv = document.createElement('div');
+          errDiv.style = 'padding: 2rem; max-width: 700px; margin: 2rem auto; font-family: system-ui; background: #fff1f2; border: 1px solid #fecdd3; border-radius: 12px; color: #9f1239;';
+          errDiv.innerHTML = '<h3 style="margin-bottom: 0.5rem;">⚠️ JavaScript Loading Error</h3>' +
+            '<p style="font-size: 0.9rem; margin-bottom: 1rem;">' + (event.message || 'Unknown script error') + '</p>' +
+            '<pre style="background: #fff; padding: 1rem; border-radius: 6px; font-size: 0.8rem; overflow: auto; border: 1px solid #fda4af;">' +
+            (event.filename ? event.filename + ':' + event.lineno + ':' + event.colno : '') + '\n' +
+            (event.error && event.error.stack ? event.error.stack : '') + '</pre>' +
+            '<button onclick="localStorage.clear(); location.reload();" style="margin-top: 1rem; padding: 0.5rem 1rem; background: #e11d48; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">Clear Cache & Reload</button>';
+          root.appendChild(errDiv);
+        }
+      });
+    </script>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
-
