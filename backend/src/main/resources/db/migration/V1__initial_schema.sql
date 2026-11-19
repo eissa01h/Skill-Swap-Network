@@ -407,3 +407,4 @@ INSERT INTO skills (name, category, description) VALUES
 ON CONFLICT (name) DO NOTHING;
 
 -- End of V1 Schema Migration
+

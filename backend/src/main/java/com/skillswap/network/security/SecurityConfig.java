@@ -43,13 +43,16 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // Public authentication & registration
                         .requestMatchers("/api/v1/auth/**").permitAll()
-                        // Public discovery endpoints
-                        .requestMatchers(HttpMethod.GET, "/api/v1/skills/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/v1/users/**").permitAll()
+                        // Public discovery & read-only endpoints
+                        .requestMatchers(HttpMethod.GET, "/api/v1/skills").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/profiles/*").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/feedback/user/*").permitAll()
                         // API documentation (Swagger)
-                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                        .requestMatchers("/v3/api-docs/**", "/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         // Actuator / health check
                         .requestMatchers("/api/v1/health").permitAll()
+                        // Administrator endpoints
+                        .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                         // All other API requests require authentication
                         .anyRequest().authenticated()
                 );
@@ -59,4 +62,3 @@ public class SecurityConfig {
         return http.build();
     }
 }
-

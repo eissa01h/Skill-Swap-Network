@@ -166,11 +166,59 @@
 
 ---
 
-### ⏳ Next: Chunk 5 — Backend Core Entities, Repositories & Database Integration
+### ✅ Chunk 5 — Spring Boot Backend Development (COMPLETED)
+- **Status:** Complete
+- **Date Completed:** 2026-11-19
+- **Objectives Accomplished:**
+  1. **Clean Layered Architecture:**
+     - Separated controllers, services, repositories, JPA entities, DTOs, security filters, and exception handlers across dedicated packages.
+     - Never exposes database entities directly: all client interactions utilize strongly-typed request and response DTOs.
+  2. **Authentication & Security:**
+     - `AuthController` & `AuthService`: Registration with BCrypt password hashing, login with JWT token issuance, session verification (`/api/v1/auth/me`), and token invalidation via `TokenBlacklistService`.
+     - `CustomUserDetailsService` enforcing account status checks (rejects blocked/suspended users).
+     - Role-based authorization (`ROLE_USER`, `ROLE_ADMIN`) with `@PreAuthorize("hasRole('ADMIN')")`.
+  3. **Profile Management:**
+     - `ProfileController` & `ProfileService`: View own profile, update bio/location/availability/avatar, and public profile retrieval (`/api/v1/profiles/{userId}`) that strictly conceals private emails and account flags.
+  4. **Skill Management & Duplicate Prevention:**
+     - `SkillController` & `SkillService`: Master catalog retrieval; full CRUD for Teaching Skills and Learning Interests.
+     - Enforces duplicate prevention via `existsByUserIdAndSkillId` checks throwing `ConflictException`.
+  5. **Search & Reciprocal Matching Engine:**
+     - `MatchController` & `MatchingService`: Directory search with keyword, category, rating, and location filters.
+     - Two-way reciprocal matching algorithm prioritizing pairs where User A teaches what User B wants AND User B teaches what User A wants.
+     - Computes compatibility score (up to 99%) and returns a transparent textual explanation of why the two users matched.
+  6. **Exchange Request Management:**
+     - `ExchangeRequestController` & `ExchangeRequestService`: Create swap proposals, list sent and received proposals.
+     - Strict authorization: Only the recipient can accept or decline; only the sender can cancel a pending proposal.
+     - Validates distinct users (`sender <> recipient`) and distinct skills.
+  7. **Exchange Lifecycle Management:**
+     - `ExchangeController` & `ExchangeService`: Automatically provisions active `exchanges` contract upon request acceptance.
+     - Completion verification: Both participants sign off (`user_a_completed` & `user_b_completed`), transitioning exchange to `COMPLETED` and incrementing user reputation statistics.
+     - Cancellation handling: Authorized participants can cancel with a mandatory reason, automatically cascading to cancel future scheduled lessons.
+  8. **In-App Communication:**
+     - `ChatController` & `ChatService`: 1-on-1 direct conversations with canonical user ID ordering (`userOneId < userTwoId`) preventing duplicate threads.
+     - Chronological message history with automatic read receipt updates.
+     - Strictly forbids non-participants from accessing unrelated chats.
+  9. **Lesson Scheduling:**
+     - `LessonController` & `LessonService`: Schedule lessons with date, start time, duration, delivery method, and auto-generated meeting room links.
+     - Update agenda, cancel lessons, and view session details for authorized exchange participants.
+  10. **Verified Peer Ratings & Feedback:**
+      - `FeedbackController` & `FeedbackService`: Submit 1-5 star ratings and qualitative reviews.
+      - Enforces domain rules: Feedback permitted strictly post-completion; duplicate reviews for the same exchange are blocked.
+      - Public feedback viewing for member reputation profiles.
+  11. **Incident Reporting & Administrative Moderation:**
+      - `AdminController` & `AdminService`: Submit safety reports (commercial solicitation, harassment, spam).
+      - Admin queue: Filter reports by status, review attached evidence/transcripts, and resolve with moderation actions (`WARNING_ISSUED`, `CONTENT_REMOVED`, `ACCOUNT_BLOCKED`, `DISMISSED`).
+      - Account blocking and unblocking with tamper-evident entries logged in `moderation_audit_logs`.
+      - Platform metrics: Total users, active swaps, completed exchanges, and resolution rates.
+  12. **Business Rules Testing & Documentation:**
+      - Unit and domain rule tests: `MatchingServiceTest`, `ExchangeBusinessRulesTest`, `DuplicateSkillPreventionTest`.
+      - Comprehensive REST API specification updated in [docs/api-documentation.md](file:///c:/Users/AIRIN/OneDrive/Desktop/SE%20PRO/docs/api-documentation.md).
+
+---
+
+### ⏳ Next: Chunk 6 — Full-Stack Integration & End-to-End Verification
 - **Planned Objectives:**
-  1. Implement JPA Entity classes matching the V1 schema (`User`, `UserProfile`, `Skill`, `TeachingSkill`, `LearningInterest`, `ExchangeRequest`, `Exchange`, `Conversation`, `Message`, `Lesson`, `RatingFeedback`, `Report`, `ModerationAuditLog`, `Notification`).
-  2. Implement Spring Data JPA repositories with query methods for skills, swaps, reciprocal matching, and pagination.
-  3. Connect PostgreSQL / Supabase live database connection.
-  4. Implement database migration verification test.
-  5. Build Spring Boot REST Controllers and Services with validation and standard `ApiResponse<T>` envelopes.
-  6. Connect Spring Security JWT authentication and BCrypt password hashing.
+  1. Connect React frontend API service layer (`frontend/src/services/`) to the Spring Boot REST endpoints (`http://localhost:8080/api/v1`).
+  2. Configure environment variables for local development and Supabase live database connection.
+  3. Verify end-to-end user journeys: Registration -> Add Skills -> Search/Match -> Propose Swap -> Accept -> Chat -> Schedule Lesson -> Complete Swap -> Leave Review -> Admin Moderation.
+  4. Final integration verification, smoke tests, and project wrap-up.
