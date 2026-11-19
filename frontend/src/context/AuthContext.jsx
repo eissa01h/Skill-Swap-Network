@@ -1,7 +1,7 @@
 import React, { createContext, useState, useEffect } from 'react';
 import { STORAGE_KEYS } from '../utils/constants';
-import { MOCK_CURRENT_USER, MOCK_ADMIN_USER } from '../utils/mockData';
 import { authService } from '../services/authService';
+import { supabase, isSupabaseConfigured, isAdminEmail, determineUserRole } from '../config/supabaseClient';
 
 export const AuthContext = createContext(null);
 
@@ -11,18 +11,23 @@ export function AuthProvider({ children }) {
       const stored = localStorage.getItem(STORAGE_KEYS.USER_DATA);
       if (stored) {
         const parsed = JSON.parse(stored);
-        if (parsed && typeof parsed === 'object') {
-          return { ...MOCK_CURRENT_USER, ...parsed };
+        if (parsed && typeof parsed === 'object' && parsed.email) {
+          const role = determineUserRole(parsed.email);
+          return {
+            ...parsed,
+            role,
+          };
         }
       }
-      return MOCK_CURRENT_USER;
+      return null;
     } catch {
-      return MOCK_CURRENT_USER;
+      return null;
     }
   });
 
   const [loading, setLoading] = useState(false);
 
+  // Sync user state with localStorage
   useEffect(() => {
     if (user) {
       localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(user));
@@ -32,36 +37,89 @@ export function AuthProvider({ children }) {
     }
   }, [user]);
 
-  const loginAsMember = () => {
-    setUser(MOCK_CURRENT_USER);
-  };
+  // Real-time Supabase Auth state listener
+  useEffect(() => {
+    if (!isSupabaseConfigured || !supabase) return;
 
-  const loginAsAdmin = () => {
-    setUser(MOCK_ADMIN_USER);
-  };
+    // Check existing Supabase session on mount
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        const email = session.user.email.toLowerCase();
+        const role = determineUserRole(email);
+        const metaName = session.user.user_metadata?.fullName || session.user.user_metadata?.full_name;
+        const normalized = {
+          id: session.user.id,
+          userId: session.user.id,
+          name: metaName || (isAdminEmail(email) ? 'Eissa (Admin)' : 'Skill Swap Member'),
+          fullName: metaName || (isAdminEmail(email) ? 'Eissa (Admin)' : 'Skill Swap Member'),
+          email: email,
+          role: role,
+          avatar: session.user.user_metadata?.avatar_url || 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&auto=format&fit=crop&q=80',
+          title: isAdminEmail(email) ? 'Platform Administrator' : 'Skill Swap Member',
+          location: session.user.user_metadata?.location || 'Remote',
+          bio: session.user.user_metadata?.bio || 'Enthusiastic learner and teacher.',
+          stats: { swapsCompleted: 0, hoursTaught: 0, rating: 5.0, reviewsCount: 0 },
+        };
+        setUser(normalized);
+      }
+    });
+
+    // Listen for auth events (sign in, sign out, token refresh)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {
+        if (session?.user) {
+          const email = session.user.email.toLowerCase();
+          const role = determineUserRole(email);
+          const metaName = session.user.user_metadata?.fullName || session.user.user_metadata?.full_name;
+          const normalized = {
+            id: session.user.id,
+            userId: session.user.id,
+            name: metaName || (isAdminEmail(email) ? 'Eissa (Admin)' : 'Skill Swap Member'),
+            fullName: metaName || (isAdminEmail(email) ? 'Eissa (Admin)' : 'Skill Swap Member'),
+            email: email,
+            role: role,
+            avatar: session.user.user_metadata?.avatar_url || 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&auto=format&fit=crop&q=80',
+            title: isAdminEmail(email) ? 'Platform Administrator' : 'Skill Swap Member',
+            location: session.user.user_metadata?.location || 'Remote',
+            bio: session.user.user_metadata?.bio || 'Enthusiastic learner and teacher.',
+            stats: { swapsCompleted: 0, hoursTaught: 0, rating: 5.0, reviewsCount: 0 },
+          };
+          setUser(normalized);
+        }
+      } else if (event === 'SIGNED_OUT') {
+        setUser(null);
+      }
+    });
+
+    return () => {
+      subscription?.unsubscribe();
+    };
+  }, []);
 
   const login = async (credentials) => {
     setLoading(true);
     try {
       const res = await authService.login(credentials);
       if (res) {
+        const cleanEmail = (res.email || credentials.email).trim().toLowerCase();
+        const role = determineUserRole(cleanEmail);
         const normalizedUser = {
-          id: res.userId || res.id || 'u_1',
-          name: res.fullName || res.name || 'Sarah Chen',
-          email: res.email || credentials.email,
-          role: res.role || (credentials.email?.toLowerCase().includes('admin') ? 'ROLE_ADMIN' : 'ROLE_USER'),
-          avatar: res.avatarUrl || res.avatar || MOCK_CURRENT_USER.avatar,
-          title: res.headline || res.title || MOCK_CURRENT_USER.title,
-          location: res.location || MOCK_CURRENT_USER.location,
-          bio: res.bio || MOCK_CURRENT_USER.bio,
-          stats: res.stats || MOCK_CURRENT_USER.stats,
+          id: res.userId || res.id || `usr_${Date.now()}`,
+          userId: res.userId || res.id,
+          name: res.fullName || res.name || (isAdminEmail(cleanEmail) ? 'Eissa (Admin)' : 'Skill Swap Member'),
+          fullName: res.fullName || res.name || (isAdminEmail(cleanEmail) ? 'Eissa (Admin)' : 'Skill Swap Member'),
+          email: cleanEmail,
+          role: role,
+          avatar: res.avatarUrl || res.avatar || 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&auto=format&fit=crop&q=80',
+          title: isAdminEmail(cleanEmail) ? 'Platform Administrator' : (res.headline || res.title || 'Skill Swap Member'),
+          location: res.location || 'Remote',
+          bio: res.bio || 'Enthusiastic learner and teacher.',
+          stats: res.stats || { swapsCompleted: 0, hoursTaught: 0, rating: 5.0, reviewsCount: 0 },
         };
         setUser(normalizedUser);
         return { success: true, user: normalizedUser };
       }
       return { success: false, error: 'Invalid credentials' };
-    } catch (err) {
-      throw err;
     } finally {
       setLoading(false);
     }
@@ -72,23 +130,25 @@ export function AuthProvider({ children }) {
     try {
       const res = await authService.register(userData);
       if (res) {
+        const cleanEmail = (res.email || userData.email).trim().toLowerCase();
+        const role = determineUserRole(cleanEmail);
         const normalizedUser = {
-          id: res.userId || res.id || `u_${Date.now()}`,
+          id: res.userId || res.id || `usr_${Date.now()}`,
+          userId: res.userId || res.id,
           name: res.fullName || res.name || userData.fullName,
-          email: res.email || userData.email,
-          role: res.role || 'ROLE_USER',
-          avatar: res.avatarUrl || res.avatar || MOCK_CURRENT_USER.avatar,
-          title: 'Skill Swap Member',
-          location: 'Remote',
-          bio: 'Enthusiastic learner and teacher.',
+          fullName: res.fullName || res.name || userData.fullName,
+          email: cleanEmail,
+          role: role,
+          avatar: res.avatarUrl || res.avatar || 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&auto=format&fit=crop&q=80',
+          title: isAdminEmail(cleanEmail) ? 'Platform Administrator' : 'Skill Swap Member',
+          location: userData.location || 'Remote',
+          bio: userData.bio || 'Enthusiastic learner and teacher.',
           stats: { swapsCompleted: 0, hoursTaught: 0, rating: 5.0, reviewsCount: 0 },
         };
         setUser(normalizedUser);
         return { success: true, user: normalizedUser };
       }
       return { success: false, error: 'Registration failed' };
-    } catch (err) {
-      throw err;
     } finally {
       setLoading(false);
     }
@@ -104,7 +164,12 @@ export function AuthProvider({ children }) {
     }
   };
 
-  const isAdmin = user?.role === 'ROLE_ADMIN' || user?.role === 'ADMIN';
+  // Admin role is strictly granted ONLY to eissa.ej05@gmailcom / eissa.ej05@gmail.com
+  const isAdmin = Boolean(
+    user &&
+    isAdminEmail(user.email) &&
+    (user.role === 'ROLE_ADMIN' || user.role === 'ADMIN')
+  );
 
   return (
     <AuthContext.Provider
@@ -117,11 +182,11 @@ export function AuthProvider({ children }) {
         register,
         logout,
         setUser,
-        loginAsMember,
-        loginAsAdmin,
       }}
     >
       {children}
     </AuthContext.Provider>
   );
 }
+
+export default AuthContext;

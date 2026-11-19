@@ -4,7 +4,7 @@ import { useAuth } from '../../../hooks/useAuth';
 import './Sidebar.css';
 
 export function Sidebar({ isAdmin = false }) {
-  const { user } = useAuth();
+  const { user, isAdmin: isAdminUser } = useAuth();
 
   if (isAdmin) {
     return (
@@ -143,6 +143,21 @@ export function Sidebar({ isAdmin = false }) {
           </NavLink>
         </li>
       </ul>
+
+      {/* Only visible to the designated platform administrator */}
+      {isAdminUser && (
+        <>
+          <span className="sidebar-section-title">Administration</span>
+          <ul className="sidebar-nav-list">
+            <li>
+              <NavLink to="/admin" className="sidebar-nav-item" style={{ backgroundColor: 'rgba(99, 102, 241, 0.08)', color: '#4338ca', fontWeight: 600 }}>
+                <span className="sidebar-icon">🛡️</span>
+                <span>Admin Portal</span>
+              </NavLink>
+            </li>
+          </ul>
+        </>
+      )}
     </aside>
   );
 }

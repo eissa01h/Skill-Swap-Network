@@ -135,3 +135,4 @@ Cloudflare Pages provides lightning-fast global edge distribution for React sing
 - [x] `.env.example` templates provided for all environments.
 - [x] HTTPS enforced across all endpoints.
 - [x] CORS origin restricted to the Cloudflare Pages production domain.
+

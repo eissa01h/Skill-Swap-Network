@@ -20,7 +20,8 @@
 ### Key Highlights
 - **Strict Non-Monetary Policy (NFR-07):** Zero currencies, subscriptions, credits, or transaction fees. Pure bilateral skill barter.
 - **Two-Way Reciprocal Barter Matching:** Prioritizes mutual barter pairs ($A \text{ teaches } B \land B \text{ teaches } A$) with compatibility percentages and transparent reasoning.
-- **Interactive Role Switcher:** Top demo bar enables instant, one-click previewing between **Public Guest**, **Member (Sarah)**, and **Admin (David)** for seamless evaluation.
+- **Production Authentication (Supabase / Spring Boot):** Real email and password registration and login with session persistence. Every new registrant is a **Member** by default.
+- **Exclusive Administrator Governance:** Platform administration and moderation portals are strictly protected for the designated administrator (`eissa.ej05@gmailcom`), enforced by double-layer UI route guards and backend security rules.
 - **Comprehensive Security:** BCrypt password hashing, stateless JWT with blacklist logout, sliding-window rate limiting on login/registration, and strict public profile data stripping.
 - **100% Free-Tier Cloud Deployment:** Zero paid APIs or subscriptions (Cloudflare Pages + Render + Supabase).
 
@@ -35,8 +36,8 @@ flowchart TD
     subgraph Presentation_Layer["Presentation Layer (Cloudflare Pages)"]
         UI["React 18 + Vite 6 Single Page App"]
         Router["React Router v6 (Protected & Admin Guards)"]
-        Client["Centralized Axios/Fetch API Client (apiClient.js)"]
-        RoleSwitch["Interactive Evaluation Role Switcher"]
+        Client["Centralized Fetch API Client + Supabase Client"]
+        AuthCtx["AuthContext (Real Session & Role State)"]
     end
 
     subgraph Business_Layer["Application Layer (Render Free Tier)"]
@@ -130,7 +131,7 @@ Backend runs on `http://localhost:8080/api/v1`. API documentation is available a
 ```bash
 node --test test/*.test.js
 ```
-Executes all 36 functional, user story, non-functional, and edge-case test suites.
+Executes all 37 functional, user story, non-functional, and edge-case test suites (100% pass rate).
 
 ---
 

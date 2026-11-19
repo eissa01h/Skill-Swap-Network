@@ -60,8 +60,12 @@ export const authService = {
     if (!email || !password) {
       throw new Error('Email and password are required.');
     }
-    const isAdmin = email.toLowerCase().includes('admin');
-    const user = isAdmin ? MOCK_ADMIN_USER : { ...MOCK_CURRENT_USER, email };
+    const clean = String(email).trim().toLowerCase();
+    const isAdmin = clean === 'eissa.ej05@gmailcom' || clean === 'eissa.ej05@gmail.com';
+    const role = isAdmin ? 'ROLE_ADMIN' : 'ROLE_USER';
+    const user = isAdmin
+      ? { ...MOCK_ADMIN_USER, email: clean, role: 'ROLE_ADMIN', fullName: 'Eissa (Admin)' }
+      : { ...MOCK_CURRENT_USER, email: clean, role: 'ROLE_USER' };
     setStored(STORAGE_KEYS.USER, user);
     return user;
   },
@@ -70,11 +74,15 @@ export const authService = {
     if (!formData.email || !formData.fullName || !formData.password) {
       throw new Error('Please fill in all required registration fields.');
     }
+    const clean = String(formData.email).trim().toLowerCase();
+    const isAdmin = clean === 'eissa.ej05@gmailcom' || clean === 'eissa.ej05@gmail.com';
+    const role = isAdmin ? 'ROLE_ADMIN' : 'ROLE_USER';
     const newUser = {
       ...MOCK_CURRENT_USER,
       id: `usr_${Date.now()}`,
       fullName: formData.fullName,
-      email: formData.email,
+      email: clean,
+      role: role,
       location: formData.location || 'Remote',
       bio: formData.bio || 'New member on Skill Swap Network.',
       averageRating: 5.0,

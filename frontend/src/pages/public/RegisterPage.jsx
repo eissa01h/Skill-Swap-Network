@@ -6,6 +6,7 @@ import { Input } from '../../components/ui/Input/Input';
 import { Textarea } from '../../components/ui/Input/Textarea';
 import { ErrorMessage } from '../../components/ui/Feedback/ErrorMessage';
 import { useAuth } from '../../hooks/useAuth';
+import { isAdminEmail } from '../../config/supabaseClient';
 import './LoginPage.css';
 
 export function RegisterPage() {
@@ -30,14 +31,18 @@ export function RegisterPage() {
     setError('');
     setSubmitting(true);
     try {
-      await register({
+      const res = await register({
         fullName: formData.fullName,
         email: formData.email,
         password: formData.password,
         location: formData.location,
         bio: formData.bio,
       });
-      navigate('/app/teaching');
+      if (isAdminEmail(formData.email) || res?.user?.role === 'ROLE_ADMIN') {
+        navigate('/admin');
+      } else {
+        navigate('/app/teaching');
+      }
     } catch (err) {
       setError(err.message || 'Registration failed. Please check your details and try again.');
     } finally {

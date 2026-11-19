@@ -101,4 +101,36 @@ describe('Important Edge Cases & Negative Scenarios', () => {
       /Topic and Date\/Time are required/
     );
   });
+
+  test('Edge Case 9: Default Role Assignment & Exclusive Admin Email Protection (eissa.ej05@gmailcom)', async () => {
+    // 1. Regular user registration defaults to ROLE_USER (member)
+    const normalUser = await authService.register({
+      fullName: 'John Doe',
+      email: 'john.doe@example.com',
+      password: 'SecurePassword123!',
+    });
+    assert.equal(normalUser.role, 'ROLE_USER');
+
+    // 2. An email with 'admin' in the name does NOT get admin
+    const fakeAdmin = await authService.register({
+      fullName: 'Fake Admin',
+      email: 'admin.imposter@gmail.com',
+      password: 'SecurePassword123!',
+    });
+    assert.equal(fakeAdmin.role, 'ROLE_USER');
+
+    // 3. Only designated email eissa.ej05@gmailcom receives ROLE_ADMIN
+    const designatedAdmin = await authService.login({
+      email: 'eissa.ej05@gmailcom',
+      password: 'AdminPassword123!',
+    });
+    assert.equal(designatedAdmin.role, 'ROLE_ADMIN');
+
+    // 4. Also supports eissa.ej05@gmail.com
+    const designatedAdminAlt = await authService.login({
+      email: 'eissa.ej05@gmail.com',
+      password: 'AdminPassword123!',
+    });
+    assert.equal(designatedAdminAlt.role, 'ROLE_ADMIN');
+  });
 });

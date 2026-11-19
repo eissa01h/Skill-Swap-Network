@@ -5,6 +5,7 @@ import { Button } from '../../components/ui/Button/Button';
 import { Input } from '../../components/ui/Input/Input';
 import { ErrorMessage } from '../../components/ui/Feedback/ErrorMessage';
 import { useAuth } from '../../hooks/useAuth';
+import { isAdminEmail } from '../../config/supabaseClient';
 import './LoginPage.css';
 
 export function LoginPage() {
@@ -13,7 +14,7 @@ export function LoginPage() {
   const [error, setError] = useState('');
   const [sessionExpiredNotice, setSessionExpiredNotice] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const { login, loginAsMember, loginAsAdmin } = useAuth();
+  const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -31,7 +32,7 @@ export function LoginPage() {
     setSubmitting(true);
     try {
       const res = await login({ email, password });
-      if (res.user?.role === 'ROLE_ADMIN' || email.toLowerCase().includes('admin')) {
+      if (res?.user?.role === 'ROLE_ADMIN' || isAdminEmail(res?.user?.email || email)) {
         navigate('/admin');
       } else {
         const from = location.state?.from?.pathname || '/app/dashboard';
@@ -42,16 +43,6 @@ export function LoginPage() {
     } finally {
       setSubmitting(false);
     }
-  };
-
-  const handleDemoMember = () => {
-    loginAsMember();
-    navigate('/app/dashboard');
-  };
-
-  const handleDemoAdmin = () => {
-    loginAsAdmin();
-    navigate('/admin');
   };
 
   return (
@@ -104,21 +95,6 @@ export function LoginPage() {
               Sign In to SkillSwap
             </Button>
           </form>
-
-          {/* Quick Demo Fillers for Evaluators */}
-          <div className="demo-account-pills">
-            <span style={{ fontWeight: 700, color: 'var(--color-slate-700)', display: 'block', marginBottom: 'var(--space-2)' }}>
-              ⚡ Quick-Test One-Click Logins:
-            </span>
-            <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-              <Button variant="outline" size="sm" fullWidth onClick={handleDemoMember}>
-                Member (Sarah)
-              </Button>
-              <Button variant="outline" size="sm" fullWidth onClick={handleDemoAdmin}>
-                Admin (David)
-              </Button>
-            </div>
-          </div>
 
           <p style={{ textAlign: 'center', fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)', marginTop: 'var(--space-6)' }}>
             Don't have an account yet? <Link to="/register" style={{ fontWeight: 600 }}>Create account free</Link>

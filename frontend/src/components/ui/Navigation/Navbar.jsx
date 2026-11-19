@@ -6,7 +6,7 @@ import { Button } from '../Button/Button';
 import './Navbar.css';
 
 export function Navbar() {
-  const { user, isAuthenticated, isAdmin, logout, loginAsMember, loginAsAdmin } = useAuth();
+  const { user, isAuthenticated, isAdmin, logout } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
 
@@ -14,35 +14,6 @@ export function Navbar() {
 
   return (
     <header className="app-navbar">
-      {/* Interactive Evaluation / Demo Role Switcher Bar */}
-      <div className="demo-role-banner">
-        <span>⚡ <strong>Live Prototype Mode</strong> (Software Engineering Project)</span>
-        <div className="demo-role-badges">
-          <span style={{ opacity: 0.8 }}>Preview as:</span>
-          <button
-            type="button"
-            className={`demo-role-btn ${isAuthenticated && !isAdmin ? 'active' : ''}`}
-            onClick={loginAsMember}
-          >
-            👤 Member (Sarah)
-          </button>
-          <button
-            type="button"
-            className={`demo-role-btn ${isAdmin ? 'active' : ''}`}
-            onClick={loginAsAdmin}
-          >
-            🛡️ Admin (David)
-          </button>
-          <button
-            type="button"
-            className={`demo-role-btn ${!isAuthenticated ? 'active' : ''}`}
-            onClick={logout}
-          >
-            🌐 Public Guest
-          </button>
-        </div>
-      </div>
-
       <div className="container">
         <div className="navbar-inner">
           <Link to={isAuthenticated ? (isAdmin ? '/admin' : '/app/dashboard') : '/'} className="navbar-brand">

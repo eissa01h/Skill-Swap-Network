@@ -23,6 +23,15 @@ import java.util.Optional;
 @Service
 public class AuthService {
 
+    public static final String ADMIN_EMAIL = "eissa.ej05@gmailcom";
+    public static final String ADMIN_EMAIL_ALT = "eissa.ej05@gmail.com";
+
+    public static boolean isAdminEmail(String email) {
+        if (email == null) return false;
+        String clean = email.trim().toLowerCase();
+        return clean.equals(ADMIN_EMAIL) || clean.equals(ADMIN_EMAIL_ALT);
+    }
+
     @Autowired
     private UserRepository userRepository;
 
@@ -48,7 +57,10 @@ public class AuthService {
         // Hash password with BCrypt
         String hashedPassword = passwordEncoder.encode(request.getPassword());
 
-        User user = new User(email, hashedPassword, "ROLE_USER");
+        // Role assignment: Every new user is a 'member' by default; only eissa.ej05@gmailcom gets ROLE_ADMIN
+        String role = isAdminEmail(email) ? "ROLE_ADMIN" : "ROLE_USER";
+
+        User user = new User(email, hashedPassword, role);
         user = userRepository.save(user);
 
         // Create initial Profile
@@ -72,6 +84,16 @@ public class AuthService {
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
             throw new UnauthorizedException("Invalid email or password");
+        }
+
+        // Strict role enforcement: Only eissa.ej05@gmailcom can ever have ROLE_ADMIN
+        boolean isDesignatedAdmin = isAdminEmail(email);
+        if (isDesignatedAdmin && !"ROLE_ADMIN".equalsIgnoreCase(user.getRole())) {
+            user.setRole("ROLE_ADMIN");
+            user = userRepository.save(user);
+        } else if (!isDesignatedAdmin && "ROLE_ADMIN".equalsIgnoreCase(user.getRole())) {
+            user.setRole("ROLE_USER");
+            user = userRepository.save(user);
         }
 
         UserProfile profile = userProfileRepository.findByUserId(user.getId())

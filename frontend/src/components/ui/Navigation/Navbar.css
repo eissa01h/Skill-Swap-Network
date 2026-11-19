@@ -7,37 +7,6 @@
   backdrop-filter: blur(8px);
 }
 
-.demo-role-banner {
-  background-color: var(--color-slate-900);
-  color: var(--text-inverse);
-  padding: 0.35rem var(--space-4);
-  font-size: var(--font-size-xs);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.demo-role-badges {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-}
-
-.demo-role-btn {
-  padding: 0.15rem 0.5rem;
-  font-size: 0.7rem;
-  border-radius: var(--radius-sm);
-  background-color: rgba(255, 255, 255, 0.15);
-  color: #fff;
-  transition: all var(--transition-fast);
-}
-
-.demo-role-btn.active {
-  background-color: var(--color-accent-500);
-  color: #fff;
-  font-weight: 600;
-}
-
 .navbar-inner {
   display: flex;
   align-items: center;

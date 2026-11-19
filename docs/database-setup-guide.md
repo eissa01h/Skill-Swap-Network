@@ -87,3 +87,4 @@ The schema enforces strict domain rules at the database level:
 - `CHECK (sender_id <> recipient_id)` prevents self-swaps.
 - `CHECK (offered_skill_id <> requested_skill_id)` prevents trading identical skills.
 - `CHECK (rating >= 1 AND rating <= 5)` validates score ranges.
+

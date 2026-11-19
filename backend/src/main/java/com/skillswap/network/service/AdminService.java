@@ -3,6 +3,7 @@ package com.skillswap.network.service;
 import com.skillswap.network.dto.*;
 import com.skillswap.network.entity.*;
 import com.skillswap.network.exception.BadRequestException;
+import com.skillswap.network.exception.ForbiddenException;
 import com.skillswap.network.exception.ResourceNotFoundException;
 import com.skillswap.network.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,8 +75,15 @@ public class AdminService {
         return mapToReportDto(report);
     }
 
+    private void verifyAdminUser(User admin) {
+        if (admin == null || !AuthService.isAdminEmail(admin.getEmail()) || !"ROLE_ADMIN".equalsIgnoreCase(admin.getRole())) {
+            throw new ForbiddenException("Access denied: Action requires designated platform administrator authority (eissa.ej05@gmailcom).");
+        }
+    }
+
     @Transactional
     public ReportDto resolveReport(User admin, UUID reportId, ResolveReportRequest request) {
+        verifyAdminUser(admin);
         Report report = reportRepository.findById(reportId)
                 .orElseThrow(() -> new ResourceNotFoundException("Report not found with id: " + reportId));
 
@@ -108,6 +116,7 @@ public class AdminService {
 
     @Transactional
     public void blockUser(User admin, UUID userId, String reason) {
+        verifyAdminUser(admin);
         User target = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
 
@@ -131,6 +140,7 @@ public class AdminService {
 
     @Transactional
     public void unblockUser(User admin, UUID userId, String reason) {
+        verifyAdminUser(admin);
         User target = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
 

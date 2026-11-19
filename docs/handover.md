@@ -57,7 +57,8 @@ SE PRO/
 │   │   └── _redirects                                # Cloudflare Pages SPA rewrite rules
 │   ├── src/
 │   │   ├── components/                               # Atomic reusable UI components & guards
-│   │   ├── context/                                  # AuthContext with demo role switching
+│   │   ├── config/                                   # Supabase Client & Admin Role configuration
+│   │   ├── context/                                  # AuthContext with real Supabase Auth & JWT state
 │   │   ├── layouts/                                  # AppLayout, AdminLayout, PublicLayout
 │   │   ├── pages/                                    # Public, Member App, and Admin pages
 │   │   ├── services/                                 # 12 isolated API services + centralized client
@@ -127,3 +128,4 @@ The application is pre-configured for free-tier cloud deployment:
 - **Test Results:** 36 automated tests passed, 0 failed, 0 skipped.
 
 The project is complete, verified, and officially handed over.
+

@@ -43,3 +43,4 @@ ENV JAVA_OPTS="-Xms256m -Xmx384m -XX:+UseG1GC"
 
 # Launch application
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
+

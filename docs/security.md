@@ -26,10 +26,12 @@ This document formalizes the complete defensive architecture implemented across 
 - **Per-Request Verification:** `JwtAuthenticationFilter` intercepts incoming HTTP requests, validates the signature, verifies expiration, and checks the token against the active invalidation blacklist.
 - **Deterministic Logout:** When a member calls `POST /api/v1/auth/logout`, `TokenBlacklistService` caches the token signature until its natural expiration, immediately invalidating subsequent requests even if the JWT has not yet expired.
 
-### 2.3 Prevention of Privilege Escalation
-- User registration via `POST /api/v1/auth/register` strictly hardcodes the assigned authority to `"ROLE_USER"`.
-- The request DTO (`RegisterRequest`) deliberately omits any `role` property. Even if malicious clients submit extra JSON properties, Spring Data JPA assigns the immutable default.
-- Administrator accounts can only be provisioned by database administrators or existing platform administrators via dedicated administrative procedures.
+### 2.3 Role Enforcement & Exclusive Administrator Allocation
+- **Default Role:** Every newly registered user is assigned the `'ROLE_USER'` ("member") role by default.
+- **Exclusive Administrator:** In accordance with platform governance requirements, the administrative role (`'ROLE_ADMIN'`) is exclusively restricted to the designated platform owner email `eissa.ej05@gmailcom` (and `eissa.ej05@gmail.com`).
+- **Escalation Prevention:** The registration endpoint and request DTO (`RegisterRequest`) deliberately omit any role assignment capabilities. Any attempts by external users to request administrative status are ignored.
+- **Double-Layer Backend Protection:** All `/api/v1/admin/**` endpoints are protected both by Spring Security's `@PreAuthorize("hasRole('ADMIN')")` URL and method guards, AND by explicit email verification (`AuthService.isAdminEmail(principal.getEmail())`). Any unauthorized access attempt results in immediate `HTTP 403 Forbidden` rejection.
+- **Supabase Authentication:** Supabase Auth is integrated into the client and API layers for secure email/password credential management, session persistence, and token synchronization.
 
 ---
 
