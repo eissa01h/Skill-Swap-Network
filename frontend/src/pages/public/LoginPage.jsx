@@ -12,8 +12,11 @@ export function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [isNoAccountError, setIsNoAccountError] = useState(false);
   const [sessionExpiredNotice, setSessionExpiredNotice] = useState(false);
+  const [registeredNotice, setRegisteredNotice] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+
   const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -23,13 +26,22 @@ export function LoginPage() {
     if (params.get('expired') === 'true') {
       setSessionExpiredNotice(true);
     }
+    if (params.get('registered') === 'true') {
+      setRegisteredNotice(true);
+      const prefillEmail = params.get('email');
+      if (prefillEmail) {
+        setEmail(prefillEmail);
+      }
+    }
   }, [location]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setIsNoAccountError(false);
     setSessionExpiredNotice(false);
     setSubmitting(true);
+
     try {
       const res = await login({ email, password });
       if (res?.user?.role === 'ROLE_ADMIN' || isAdminEmail(res?.user?.email || email)) {
@@ -39,7 +51,23 @@ export function LoginPage() {
         navigate(from);
       }
     } catch (err) {
-      setError(err.message || 'Login failed. Please check your credentials.');
+      const rawMessage = String(err?.message || '').toLowerCase();
+      // Detect invalid credentials / non-existent account in Supabase or client auth
+      const isNotFoundOrInvalid =
+        rawMessage.includes('invalid') ||
+        rawMessage.includes('not found') ||
+        rawMessage.includes('credentials') ||
+        rawMessage.includes('user not found') ||
+        rawMessage.includes('email not confirmed') ||
+        rawMessage.includes('grant_type');
+
+      if (isNotFoundOrInvalid) {
+        setIsNoAccountError(true);
+        setError('No account found with these details. Please create an account first');
+      } else {
+        setIsNoAccountError(false);
+        setError(err.message || 'Login failed. Please check your credentials.');
+      }
     } finally {
       setSubmitting(false);
     }
@@ -56,21 +84,83 @@ export function LoginPage() {
             </p>
           </div>
 
+          {registeredNotice && (
+            <div
+              style={{
+                background: '#ecfdf5',
+                border: '1px solid #10b981',
+                color: '#065f46',
+                padding: '12px 16px',
+                borderRadius: '8px',
+                fontSize: '13px',
+                marginBottom: '16px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                lineHeight: 1.4,
+              }}
+            >
+              <span style={{ fontSize: '18px' }}>🎉</span>
+              <div>
+                <strong>Account created successfully!</strong>
+                <div>Please sign in with your password to continue to your dashboard.</div>
+              </div>
+            </div>
+          )}
+
           {sessionExpiredNotice && (
-            <div style={{
-              background: '#fef3c7',
-              border: '1px solid #f59e0b',
-              color: '#92400e',
-              padding: '10px 14px',
-              borderRadius: '8px',
-              fontSize: '13px',
-              marginBottom: '16px'
-            }}>
+            <div
+              style={{
+                background: '#fef3c7',
+                border: '1px solid #f59e0b',
+                color: '#92400e',
+                padding: '10px 14px',
+                borderRadius: '8px',
+                fontSize: '13px',
+                marginBottom: '16px',
+              }}
+            >
               Your previous session has expired. Please log in again to continue.
             </div>
           )}
 
-          <ErrorMessage message={error} />
+          {/* Invalid credentials notice with direct button to Sign Up page */}
+          {isNoAccountError ? (
+            <div
+              style={{
+                background: '#fef2f2',
+                border: '1px solid #f87171',
+                borderRadius: '8px',
+                padding: '14px 16px',
+                marginBottom: '18px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '12px',
+              }}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: '8px',
+                  color: '#991b1b',
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  lineHeight: 1.4,
+                }}
+              >
+                <span style={{ fontSize: '18px', lineHeight: 1 }}>⚠️</span>
+                <span>No account found with these details. Please create an account first</span>
+              </div>
+              <Link to="/register" style={{ textDecoration: 'none' }}>
+                <Button variant="danger" size="sm" fullWidth>
+                  Create an Account →
+                </Button>
+              </Link>
+            </div>
+          ) : (
+            <ErrorMessage message={error} />
+          )}
 
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
             <Input
@@ -79,7 +169,10 @@ export function LoginPage() {
               required
               placeholder="you@example.com"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                if (isNoAccountError) setIsNoAccountError(false);
+              }}
             />
 
             <Input
@@ -88,7 +181,10 @@ export function LoginPage() {
               required
               placeholder="••••••••"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                if (isNoAccountError) setIsNoAccountError(false);
+              }}
             />
 
             <Button type="submit" variant="primary" fullWidth loading={submitting}>
@@ -97,10 +193,15 @@ export function LoginPage() {
           </form>
 
           <p style={{ textAlign: 'center', fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)', marginTop: 'var(--space-6)' }}>
-            Don't have an account yet? <Link to="/register" style={{ fontWeight: 600 }}>Create account free</Link>
+            Don't have an account yet?{' '}
+            <Link to="/register" style={{ fontWeight: 600, color: 'var(--color-primary-600)' }}>
+              Create account free
+            </Link>
           </p>
         </div>
       </div>
     </PublicLayout>
   );
 }
+
+export default LoginPage;

@@ -1,4 +1,4 @@
-import apiClient from './apiClient';
+import apiClient, { isBackendUnavailable } from './apiClient';
 import { scheduleService as mockLessons } from './mockApi';
 
 export const lessonService = {
@@ -6,7 +6,7 @@ export const lessonService = {
     try {
       return await apiClient.get('/lessons');
     } catch (err) {
-      if (isNetworkError(err)) {
+      if (isBackendUnavailable(err)) {
         return await mockLessons.getLessons();
       }
       throw err;
@@ -17,7 +17,7 @@ export const lessonService = {
     try {
       return await apiClient.post('/lessons', lessonData);
     } catch (err) {
-      if (isNetworkError(err)) {
+      if (isBackendUnavailable(err)) {
         return await mockLessons.scheduleLesson(lessonData);
       }
       throw err;
@@ -28,7 +28,7 @@ export const lessonService = {
     try {
       return await apiClient.get(`/lessons/${lessonId}`);
     } catch (err) {
-      if (isNetworkError(err)) {
+      if (isBackendUnavailable(err)) {
         const list = await mockLessons.getLessons();
         return list.find(l => l.id === lessonId);
       }
@@ -40,7 +40,7 @@ export const lessonService = {
     try {
       return await apiClient.put(`/lessons/${lessonId}`, lessonData);
     } catch (err) {
-      if (isNetworkError(err)) {
+      if (isBackendUnavailable(err)) {
         return { id: lessonId, ...lessonData };
       }
       throw err;
@@ -51,17 +51,13 @@ export const lessonService = {
     try {
       return await apiClient.post(`/lessons/${lessonId}/cancel`, { reason });
     } catch (err) {
-      if (isNetworkError(err)) {
+      if (isBackendUnavailable(err)) {
         return true;
       }
       throw err;
     }
   },
 };
-
-function isNetworkError(err) {
-  return err.name === 'TypeError' || err.message?.includes('fetch') || err.message?.includes('Failed to fetch');
-}
 
 export default lessonService;
 

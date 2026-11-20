@@ -1,4 +1,4 @@
-import apiClient from './apiClient';
+import apiClient, { isBackendUnavailable } from './apiClient';
 import { matchService as mockMatch } from './mockApi';
 
 export const searchService = {
@@ -13,17 +13,13 @@ export const searchService = {
       const queryString = params.toString() ? `?${params.toString()}` : '';
       return await apiClient.get(`/matches/partners${queryString}`);
     } catch (err) {
-      if (isNetworkError(err)) {
+      if (isBackendUnavailable(err)) {
         return await mockMatch.searchPartners({ query, category, minRating });
       }
       throw err;
     }
   },
 };
-
-function isNetworkError(err) {
-  return err.name === 'TypeError' || err.message?.includes('fetch') || err.message?.includes('Failed to fetch');
-}
 
 export default searchService;
 

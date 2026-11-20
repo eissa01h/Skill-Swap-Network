@@ -6,9 +6,10 @@ import { supabase, isSupabaseConfigured, isAdminEmail, determineUserRole } from 
 export const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
+  // Synchronous recovery from localStorage for instant, non-flickering session restoration
   const [user, setUser] = useState(() => {
     try {
-      const stored = localStorage.getItem(STORAGE_KEYS.USER_DATA);
+      const stored = localStorage.getItem(STORAGE_KEYS.USER_DATA) || localStorage.getItem('ssn_user');
       if (stored) {
         const parsed = JSON.parse(stored);
         if (parsed && typeof parsed === 'object' && parsed.email) {
@@ -25,52 +26,43 @@ export function AuthProvider({ children }) {
     }
   });
 
-  const [loading, setLoading] = useState(false);
+  // If user was recovered synchronously, loading is false. Otherwise, wait for Supabase getSession.
+  const [loading, setLoading] = useState(() => {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEYS.USER_DATA) || localStorage.getItem('ssn_user');
+      if (stored) return false;
+      return isSupabaseConfigured && !!supabase;
+    } catch {
+      return false;
+    }
+  });
 
-  // Sync user state with localStorage
+  // Keep both localStorage keys synced with active user state
   useEffect(() => {
     if (user) {
       localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(user));
+      localStorage.setItem('ssn_user', JSON.stringify(user));
     } else {
       localStorage.removeItem(STORAGE_KEYS.USER_DATA);
+      localStorage.removeItem('ssn_user');
       localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
     }
   }, [user]);
 
-  // Real-time Supabase Auth state listener
+  // Real-time Supabase Auth state listener & token refresher
   useEffect(() => {
-    if (!isSupabaseConfigured || !supabase) return;
+    if (!isSupabaseConfigured || !supabase) {
+      setLoading(false);
+      return;
+    }
 
-    // Check existing Supabase session on mount
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        const email = session.user.email.toLowerCase();
-        const role = determineUserRole(email);
-        const metaName = session.user.user_metadata?.fullName || session.user.user_metadata?.full_name;
-        const normalized = {
-          id: session.user.id,
-          userId: session.user.id,
-          name: metaName || (isAdminEmail(email) ? 'Eissa (Admin)' : 'Skill Swap Member'),
-          fullName: metaName || (isAdminEmail(email) ? 'Eissa (Admin)' : 'Skill Swap Member'),
-          email: email,
-          role: role,
-          avatar: session.user.user_metadata?.avatar_url || 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&auto=format&fit=crop&q=80',
-          title: isAdminEmail(email) ? 'Platform Administrator' : 'Skill Swap Member',
-          location: session.user.user_metadata?.location || 'Remote',
-          bio: session.user.user_metadata?.bio || 'Enthusiastic learner and teacher.',
-          stats: { swapsCompleted: 0, hoursTaught: 0, rating: 5.0, reviewsCount: 0 },
-        };
-        setUser(normalized);
-      }
-    });
-
-    // Listen for auth events (sign in, sign out, token refresh)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {
+    // Verify or refresh Supabase session on mount
+    supabase.auth.getSession()
+      .then(({ data: { session } }) => {
         if (session?.user) {
           const email = session.user.email.toLowerCase();
           const role = determineUserRole(email);
-          const metaName = session.user.user_metadata?.fullName || session.user.user_metadata?.full_name;
+          const metaName = session.user.user_metadata?.fullName || session.user.user_metadata?.name;
           const normalized = {
             id: session.user.id,
             userId: session.user.id,
@@ -83,8 +75,42 @@ export function AuthProvider({ children }) {
             location: session.user.user_metadata?.location || 'Remote',
             bio: session.user.user_metadata?.bio || 'Enthusiastic learner and teacher.',
             stats: { swapsCompleted: 0, hoursTaught: 0, rating: 5.0, reviewsCount: 0 },
+            token: session.access_token,
           };
           setUser(normalized);
+          localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, session.access_token);
+        }
+      })
+      .catch((err) => {
+        console.warn('[AuthContext] Session retrieval notice:', err?.message);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+
+    // Handle authentication state events (sign in, token refresh, password recovery)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {
+        if (session?.user) {
+          const email = session.user.email.toLowerCase();
+          const role = determineUserRole(email);
+          const metaName = session.user.user_metadata?.fullName || session.user.user_metadata?.name;
+          const normalized = {
+            id: session.user.id,
+            userId: session.user.id,
+            name: metaName || (isAdminEmail(email) ? 'Eissa (Admin)' : 'Skill Swap Member'),
+            fullName: metaName || (isAdminEmail(email) ? 'Eissa (Admin)' : 'Skill Swap Member'),
+            email: email,
+            role: role,
+            avatar: session.user.user_metadata?.avatar_url || 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&auto=format&fit=crop&q=80',
+            title: isAdminEmail(email) ? 'Platform Administrator' : 'Skill Swap Member',
+            location: session.user.user_metadata?.location || 'Remote',
+            bio: session.user.user_metadata?.bio || 'Enthusiastic learner and teacher.',
+            stats: { swapsCompleted: 0, hoursTaught: 0, rating: 5.0, reviewsCount: 0 },
+            token: session.access_token,
+          };
+          setUser(normalized);
+          localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, session.access_token);
         }
       } else if (event === 'SIGNED_OUT') {
         setUser(null);

@@ -1,4 +1,4 @@
-import apiClient from './apiClient';
+import apiClient, { isBackendUnavailable } from './apiClient';
 import { messageService as mockMessages } from './mockApi';
 
 export const messageService = {
@@ -6,7 +6,7 @@ export const messageService = {
     try {
       return await apiClient.get('/conversations');
     } catch (err) {
-      if (isNetworkError(err)) {
+      if (isBackendUnavailable(err)) {
         return await mockMessages.getConversations();
       }
       throw err;
@@ -17,7 +17,7 @@ export const messageService = {
     try {
       return await apiClient.get(`/conversations/${conversationId}/messages`);
     } catch (err) {
-      if (isNetworkError(err)) {
+      if (isBackendUnavailable(err)) {
         const convs = await mockMessages.getConversations();
         const conv = convs.find(c => c.id === conversationId || c.partner?.id === conversationId);
         return conv ? conv.thread : [];
@@ -30,17 +30,13 @@ export const messageService = {
     try {
       return await apiClient.post(`/conversations/${conversationId}/messages`, { content });
     } catch (err) {
-      if (isNetworkError(err)) {
+      if (isBackendUnavailable(err)) {
         return await mockMessages.sendMessage(conversationId, content);
       }
       throw err;
     }
   },
 };
-
-function isNetworkError(err) {
-  return err.name === 'TypeError' || err.message?.includes('fetch') || err.message?.includes('Failed to fetch');
-}
 
 export default messageService;
 

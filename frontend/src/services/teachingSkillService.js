@@ -1,4 +1,4 @@
-import apiClient from './apiClient';
+import apiClient, { isBackendUnavailable } from './apiClient';
 import { skillService as mockSkills } from './mockApi';
 
 export const teachingSkillService = {
@@ -6,7 +6,7 @@ export const teachingSkillService = {
     try {
       return await apiClient.get('/skills/teaching');
     } catch (err) {
-      if (isNetworkError(err)) {
+      if (isBackendUnavailable(err)) {
         return await mockSkills.getTeachingSkills();
       }
       throw err;
@@ -17,7 +17,7 @@ export const teachingSkillService = {
     try {
       return await apiClient.post('/skills/teaching', skillData);
     } catch (err) {
-      if (isNetworkError(err)) {
+      if (isBackendUnavailable(err)) {
         return await mockSkills.addTeachingSkill(skillData);
       }
       throw err;
@@ -28,7 +28,7 @@ export const teachingSkillService = {
     try {
       return await apiClient.put(`/skills/teaching/${id}`, skillData);
     } catch (err) {
-      if (isNetworkError(err)) {
+      if (isBackendUnavailable(err)) {
         return await mockSkills.updateTeachingSkill(id, skillData);
       }
       throw err;
@@ -39,7 +39,7 @@ export const teachingSkillService = {
     try {
       return await apiClient.delete(`/skills/teaching/${id}`);
     } catch (err) {
-      if (isNetworkError(err)) {
+      if (isBackendUnavailable(err)) {
         return await mockSkills.deleteTeachingSkill(id);
       }
       throw err;
@@ -50,7 +50,7 @@ export const teachingSkillService = {
     try {
       return await apiClient.get('/skills');
     } catch (err) {
-      if (isNetworkError(err)) {
+      if (isBackendUnavailable(err)) {
         return [
           { id: '1', name: 'React Architecture', category: 'Programming & Tech' },
           { id: '2', name: 'Python Programming', category: 'Programming & Tech' },
@@ -63,10 +63,6 @@ export const teachingSkillService = {
     }
   },
 };
-
-function isNetworkError(err) {
-  return err.name === 'TypeError' || err.message?.includes('fetch') || err.message?.includes('Failed to fetch');
-}
 
 export default teachingSkillService;
 

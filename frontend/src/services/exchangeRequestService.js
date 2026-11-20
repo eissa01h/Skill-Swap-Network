@@ -1,4 +1,4 @@
-import apiClient from './apiClient';
+import apiClient, { isBackendUnavailable } from './apiClient';
 import { swapService as mockSwap } from './mockApi';
 
 export const exchangeRequestService = {
@@ -6,7 +6,7 @@ export const exchangeRequestService = {
     try {
       return await apiClient.post('/requests', proposalData);
     } catch (err) {
-      if (isNetworkError(err)) {
+      if (isBackendUnavailable(err)) {
         return await mockSwap.createProposal(proposalData);
       }
       throw err;
@@ -17,7 +17,7 @@ export const exchangeRequestService = {
     try {
       return await apiClient.get('/requests/sent');
     } catch (err) {
-      if (isNetworkError(err)) {
+      if (isBackendUnavailable(err)) {
         return await mockSwap.getOutgoingRequests();
       }
       throw err;
@@ -28,7 +28,7 @@ export const exchangeRequestService = {
     try {
       return await apiClient.get('/requests/received');
     } catch (err) {
-      if (isNetworkError(err)) {
+      if (isBackendUnavailable(err)) {
         return await mockSwap.getIncomingRequests();
       }
       throw err;
@@ -39,7 +39,7 @@ export const exchangeRequestService = {
     try {
       return await apiClient.post(`/requests/${requestId}/accept`);
     } catch (err) {
-      if (isNetworkError(err)) {
+      if (isBackendUnavailable(err)) {
         return await mockSwap.acceptRequest(requestId);
       }
       throw err;
@@ -50,7 +50,7 @@ export const exchangeRequestService = {
     try {
       return await apiClient.post(`/requests/${requestId}/decline`);
     } catch (err) {
-      if (isNetworkError(err)) {
+      if (isBackendUnavailable(err)) {
         return await mockSwap.declineRequest(requestId);
       }
       throw err;
@@ -61,17 +61,13 @@ export const exchangeRequestService = {
     try {
       return await apiClient.post(`/requests/${requestId}/cancel`, { reason });
     } catch (err) {
-      if (isNetworkError(err)) {
+      if (isBackendUnavailable(err)) {
         return await mockSwap.cancelRequest(requestId);
       }
       throw err;
     }
   },
 };
-
-function isNetworkError(err) {
-  return err.name === 'TypeError' || err.message?.includes('fetch') || err.message?.includes('Failed to fetch');
-}
 
 export default exchangeRequestService;
 

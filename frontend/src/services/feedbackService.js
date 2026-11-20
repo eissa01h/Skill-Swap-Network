@@ -1,4 +1,4 @@
-import apiClient from './apiClient';
+import apiClient, { isBackendUnavailable } from './apiClient';
 import { reviewService as mockReviews } from './mockApi';
 
 export const feedbackService = {
@@ -6,7 +6,7 @@ export const feedbackService = {
     try {
       return await apiClient.get('/feedback/user/me');
     } catch (err) {
-      if (isNetworkError(err)) {
+      if (isBackendUnavailable(err)) {
         return await mockReviews.getReviews();
       }
       throw err;
@@ -17,7 +17,7 @@ export const feedbackService = {
     try {
       return await apiClient.get(`/feedback/user/${userId}`);
     } catch (err) {
-      if (isNetworkError(err)) {
+      if (isBackendUnavailable(err)) {
         return await mockReviews.getReviews();
       }
       throw err;
@@ -28,7 +28,7 @@ export const feedbackService = {
     try {
       return await apiClient.get(`/feedback/exchange/${exchangeId}`);
     } catch (err) {
-      if (isNetworkError(err)) {
+      if (isBackendUnavailable(err)) {
         return [];
       }
       throw err;
@@ -39,17 +39,13 @@ export const feedbackService = {
     try {
       return await apiClient.post('/feedback', feedbackData);
     } catch (err) {
-      if (isNetworkError(err)) {
+      if (isBackendUnavailable(err)) {
         return await mockReviews.submitReview(feedbackData);
       }
       throw err;
     }
   },
 };
-
-function isNetworkError(err) {
-  return err.name === 'TypeError' || err.message?.includes('fetch') || err.message?.includes('Failed to fetch');
-}
 
 export default feedbackService;
 

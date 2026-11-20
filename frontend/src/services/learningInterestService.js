@@ -1,4 +1,4 @@
-import apiClient from './apiClient';
+import apiClient, { isBackendUnavailable } from './apiClient';
 import { skillService as mockSkills } from './mockApi';
 
 export const learningInterestService = {
@@ -6,7 +6,7 @@ export const learningInterestService = {
     try {
       return await apiClient.get('/skills/learning');
     } catch (err) {
-      if (isNetworkError(err)) {
+      if (isBackendUnavailable(err)) {
         return await mockSkills.getLearningInterests();
       }
       throw err;
@@ -17,7 +17,7 @@ export const learningInterestService = {
     try {
       return await apiClient.post('/skills/learning', interestData);
     } catch (err) {
-      if (isNetworkError(err)) {
+      if (isBackendUnavailable(err)) {
         return await mockSkills.addLearningInterest(interestData);
       }
       throw err;
@@ -28,7 +28,7 @@ export const learningInterestService = {
     try {
       return await apiClient.put(`/skills/learning/${id}`, interestData);
     } catch (err) {
-      if (isNetworkError(err)) {
+      if (isBackendUnavailable(err)) {
         return await mockSkills.updateLearningInterest(id, interestData);
       }
       throw err;
@@ -39,17 +39,13 @@ export const learningInterestService = {
     try {
       return await apiClient.delete(`/skills/learning/${id}`);
     } catch (err) {
-      if (isNetworkError(err)) {
+      if (isBackendUnavailable(err)) {
         return await mockSkills.deleteLearningInterest(id);
       }
       throw err;
     }
   },
 };
-
-function isNetworkError(err) {
-  return err.name === 'TypeError' || err.message?.includes('fetch') || err.message?.includes('Failed to fetch');
-}
 
 export default learningInterestService;
 

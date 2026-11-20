@@ -86,5 +86,19 @@ export const apiClient = {
   delete: (endpoint, options = {}) => request(endpoint, { method: 'DELETE', ...options }),
 };
 
+export function isBackendUnavailable(err) {
+  if (!err) return true;
+  if (err.name === 'TypeError') return true;
+  if ([404, 500, 502, 503, 504].includes(err.status)) return true;
+  const msg = String(err.message || '').toLowerCase();
+  return (
+    msg.includes('fetch') ||
+    msg.includes('failed to fetch') ||
+    msg.includes('network') ||
+    msg.includes('404') ||
+    msg.includes('not found')
+  );
+}
+
 export default apiClient;
 

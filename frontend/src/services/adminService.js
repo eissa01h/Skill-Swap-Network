@@ -1,4 +1,4 @@
-import apiClient from './apiClient';
+import apiClient, { isBackendUnavailable } from './apiClient';
 import { adminService as mockAdmin } from './mockApi';
 
 export const adminService = {
@@ -6,7 +6,7 @@ export const adminService = {
     try {
       return await apiClient.get('/admin/stats');
     } catch (err) {
-      if (isNetworkError(err)) {
+      if (isBackendUnavailable(err)) {
         return await mockAdmin.getStats();
       }
       throw err;
@@ -18,7 +18,7 @@ export const adminService = {
       const query = search ? `?search=${encodeURIComponent(search)}` : '';
       return await apiClient.get(`/admin/users${query}`);
     } catch (err) {
-      if (isNetworkError(err)) {
+      if (isBackendUnavailable(err)) {
         return await mockAdmin.getUsers(search);
       }
       throw err;
@@ -29,7 +29,7 @@ export const adminService = {
     try {
       return await apiClient.post(`/admin/users/${userId}/block`, { reason });
     } catch (err) {
-      if (isNetworkError(err)) {
+      if (isBackendUnavailable(err)) {
         return await mockAdmin.toggleUserBlock(userId);
       }
       throw err;
@@ -40,7 +40,7 @@ export const adminService = {
     try {
       return await apiClient.post(`/admin/users/${userId}/unblock`, { reason });
     } catch (err) {
-      if (isNetworkError(err)) {
+      if (isBackendUnavailable(err)) {
         return await mockAdmin.toggleUserBlock(userId);
       }
       throw err;
@@ -51,7 +51,7 @@ export const adminService = {
     try {
       return await apiClient.post(`/admin/users/${userId}/block`, { reason: 'Status toggled by administrator' });
     } catch (err) {
-      if (isNetworkError(err)) {
+      if (isBackendUnavailable(err)) {
         return await mockAdmin.toggleUserBlock(userId);
       }
       throw err;
@@ -63,7 +63,7 @@ export const adminService = {
       const query = status ? `?status=${encodeURIComponent(status)}` : '';
       return await apiClient.get(`/admin/reports${query}`);
     } catch (err) {
-      if (isNetworkError(err)) {
+      if (isBackendUnavailable(err)) {
         const list = await mockAdmin.getReports();
         return status ? list.filter(r => r.status === status) : list;
       }
@@ -75,7 +75,7 @@ export const adminService = {
     try {
       return await apiClient.get(`/admin/reports/${reportId}`);
     } catch (err) {
-      if (isNetworkError(err)) {
+      if (isBackendUnavailable(err)) {
         const list = await mockAdmin.getReports();
         return list.find(r => r.id === reportId);
       }
@@ -87,7 +87,7 @@ export const adminService = {
     try {
       return await apiClient.post(`/admin/reports/${reportId}/resolve`, { action, notes });
     } catch (err) {
-      if (isNetworkError(err)) {
+      if (isBackendUnavailable(err)) {
         return await mockAdmin.resolveReport(reportId, action);
       }
       throw err;
@@ -98,16 +98,12 @@ export const adminService = {
     try {
       return await apiClient.get('/admin/audit-logs');
     } catch (err) {
-      if (isNetworkError(err)) {
+      if (isBackendUnavailable(err)) {
         return [];
       }
       throw err;
     }
   },
 };
-
-function isNetworkError(err) {
-  return err.name === 'TypeError' || err.message?.includes('fetch') || err.message?.includes('Failed to fetch');
-}
 
 export default adminService;

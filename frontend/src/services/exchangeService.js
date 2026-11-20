@@ -1,4 +1,4 @@
-import apiClient from './apiClient';
+import apiClient, { isBackendUnavailable } from './apiClient';
 import { swapService as mockSwap } from './mockApi';
 
 export const exchangeService = {
@@ -6,7 +6,7 @@ export const exchangeService = {
     try {
       return await apiClient.get('/exchanges');
     } catch (err) {
-      if (isNetworkError(err)) {
+      if (isBackendUnavailable(err)) {
         return await mockSwap.getActiveExchanges();
       }
       throw err;
@@ -17,7 +17,7 @@ export const exchangeService = {
     try {
       return await apiClient.get(`/exchanges/${exchangeId}`);
     } catch (err) {
-      if (isNetworkError(err)) {
+      if (isBackendUnavailable(err)) {
         const list = await mockSwap.getActiveExchanges();
         return list.find(e => e.id === exchangeId);
       }
@@ -29,7 +29,7 @@ export const exchangeService = {
     try {
       return await apiClient.post(`/exchanges/${exchangeId}/complete`);
     } catch (err) {
-      if (isNetworkError(err)) {
+      if (isBackendUnavailable(err)) {
         return await mockSwap.completeExchange(exchangeId);
       }
       throw err;
@@ -40,17 +40,13 @@ export const exchangeService = {
     try {
       return await apiClient.post(`/exchanges/${exchangeId}/cancel`, { reason });
     } catch (err) {
-      if (isNetworkError(err)) {
+      if (isBackendUnavailable(err)) {
         return true;
       }
       throw err;
     }
   },
 };
-
-function isNetworkError(err) {
-  return err.name === 'TypeError' || err.message?.includes('fetch') || err.message?.includes('Failed to fetch');
-}
 
 export default exchangeService;
 
