@@ -399,7 +399,9 @@ export const swapService = {
   },
 
   async getOutgoingRequests() {
-    return getStored(STORAGE_KEYS.REQUESTS_OUTGOING, MOCK_EXCHANGE_REQUESTS.outgoing);
+    const list = getStored(STORAGE_KEYS.REQUESTS_OUTGOING, MOCK_EXCHANGE_REQUESTS.outgoing);
+    // Ensure Carlos Rodriguez starts fresh if the old pre-seeded request existed in localStorage
+    return list.filter(r => !(r.id === 'req_out_01' && (r.recipient?.id === 'usr_002' || r.recipient?.name === 'Carlos Rodriguez')));
   },
 
   async createProposal({ partner, youOffer, youWant, message, proposedSchedule }) {

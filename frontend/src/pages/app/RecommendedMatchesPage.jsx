@@ -17,13 +17,18 @@ export function RecommendedMatchesPage() {
   const [message, setMessage] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [sentRequests, setSentRequests] = useState([]);
 
   useEffect(() => {
     const fetchMatches = async () => {
       try {
         setLoading(true);
-        const data = await matchingService.getRecommendedMatches();
+        const [data, outgoing] = await Promise.all([
+          matchingService.getRecommendedMatches(),
+          exchangeRequestService.getSentRequests(),
+        ]);
         setMatches(data || []);
+        setSentRequests(outgoing || []);
       } catch (err) {
         console.error(err);
       } finally {
@@ -32,6 +37,18 @@ export function RecommendedMatchesPage() {
     };
     fetchMatches();
   }, []);
+
+  const getProposalStatus = (user) => {
+    if (!user || !sentRequests || sentRequests.length === 0) return null;
+    const req = sentRequests.find(r => {
+      const idMatch = (r.recipient?.id && r.recipient.id === user.id) ||
+                      (r.partner?.id && r.partner.id === user.id);
+      const nameMatch = (r.recipient?.name && r.recipient.name.toLowerCase() === user.name.toLowerCase()) ||
+                        (r.partner?.name && r.partner.name.toLowerCase() === user.name.toLowerCase());
+      return idMatch || nameMatch;
+    });
+    return req ? req.status : null;
+  };
 
   const handleSendProposal = async (e) => {
     e.preventDefault();
@@ -43,13 +60,16 @@ export function RecommendedMatchesPage() {
     try {
       setSubmitting(true);
       setErrorMsg('');
-      await exchangeRequestService.createRequest({
+      const created = await exchangeRequestService.createRequest({
         partner: selectedMatch.user,
         youOffer: selectedMatch.wantsFromYou,
         youWant: selectedMatch.teachesYou,
         message: message.trim(),
         proposedSchedule: '1 session per week',
       });
+      if (created) {
+        setSentRequests(prev => [created, ...(prev || [])]);
+      }
 
       setProposalSent(true);
       setTimeout(() => {
@@ -93,6 +113,7 @@ export function RecommendedMatchesPage() {
             <MatchCard
               key={match.id}
               match={match}
+              status={getProposalStatus(match.user)}
               onProposeSwap={(m) => { setErrorMsg(''); setSelectedMatch(m); }}
             />
           ))}

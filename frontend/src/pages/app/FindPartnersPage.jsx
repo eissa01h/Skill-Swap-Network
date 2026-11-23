@@ -29,23 +29,28 @@ export function FindPartnersPage() {
   const [proposalMsg, setProposalMsg] = useState('');
   const [sending, setSending] = useState(false);
   const [proposalSuccess, setProposalSuccess] = useState(false);
+  const [sentRequests, setSentRequests] = useState([]);
 
   useEffect(() => {
     async function fetchPartners() {
       setLoading(true);
       try {
-        const results = await searchService.searchPartners({
-          query: searchTerm,
-          category,
-          minRating: Number(minRating),
-        });
+        const [results, mySkills, outgoing] = await Promise.all([
+          searchService.searchPartners({
+            query: searchTerm,
+            category,
+            minRating: Number(minRating),
+          }),
+          teachingSkillService.getTeachingSkills(),
+          exchangeRequestService.getSentRequests(),
+        ]);
         setPartners(results || []);
 
-        const mySkills = await teachingSkillService.getTeachingSkills();
         setMyTeachingSkills(mySkills || []);
         if (mySkills && mySkills.length > 0) {
           setSelectedOffer(mySkills[0].name);
         }
+        setSentRequests(outgoing || []);
       } finally {
         setLoading(false);
       }
@@ -64,13 +69,16 @@ export function FindPartnersPage() {
 
     setSending(true);
     try {
-      await exchangeRequestService.createRequest({
+      const created = await exchangeRequestService.createRequest({
         partner: selectedPartner,
         youOffer: selectedOffer,
         youWant: selectedPartner.teaches,
         message: proposalMsg,
         proposedSchedule: selectedPartner.availability || 'Weekends',
       });
+      if (created) {
+        setSentRequests(prev => [created, ...(prev || [])]);
+      }
       setProposalSuccess(true);
       setTimeout(() => {
         setProposalSuccess(false);
@@ -80,6 +88,18 @@ export function FindPartnersPage() {
     } finally {
       setSending(false);
     }
+  };
+
+  const getProposalStatus = (partner) => {
+    if (!partner || !sentRequests || sentRequests.length === 0) return null;
+    const req = sentRequests.find(r => {
+      const idMatch = (r.recipient?.id && r.recipient.id === partner.id) ||
+                      (r.partner?.id && r.partner.id === partner.id);
+      const nameMatch = (r.recipient?.name && r.recipient.name.toLowerCase() === partner.name.toLowerCase()) ||
+                        (r.partner?.name && r.partner.name.toLowerCase() === partner.name.toLowerCase());
+      return idMatch || nameMatch;
+    });
+    return req ? req.status : null;
   };
 
   const handleResetFilters = () => {
@@ -129,58 +149,114 @@ export function FindPartnersPage() {
         />
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: 'var(--space-6)' }}>
-          {partners.map(p => (
-            <Card key={p.id} hoverable style={{ gap: 'var(--space-4)' }}>
-              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 'var(--space-3)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-                  <img
-                    src={p.avatar}
-                    alt={p.name}
-                    style={{ width: '56px', height: '56px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--border-subtle)' }}
-                  />
-                  <div>
-                    <h3 style={{ fontSize: 'var(--font-size-md)', fontWeight: 700 }}>{p.name}</h3>
-                    <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)' }}>
-                      📍 {p.location} • ⭐ {p.rating} ({p.reviewsCount} reviews)
-                    </p>
+          {partners.map(p => {
+            const proposalStatus = getProposalStatus(p);
+            const isPending = proposalStatus === 'PENDING';
+            const isAccepted = proposalStatus === 'ACCEPTED';
+
+            return (
+              <Card key={p.id} hoverable style={{ gap: 'var(--space-4)' }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 'var(--space-3)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+                    <img
+                      src={p.avatar}
+                      alt={p.name}
+                      style={{ width: '56px', height: '56px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--border-subtle)' }}
+                    />
+                    <div>
+                      <h3 style={{ fontSize: 'var(--font-size-md)', fontWeight: 700 }}>{p.name}</h3>
+                      <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)' }}>
+                        📍 {p.location} • ⭐ {p.rating} ({p.reviewsCount} reviews)
+                      </p>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
+                    {p.mutualMatch && (
+                      <span style={{ fontSize: '0.65rem', fontWeight: 700, padding: '0.2rem 0.5rem', borderRadius: 'var(--radius-full)', backgroundColor: 'var(--color-accent-100)', color: 'var(--color-accent-700)', textTransform: 'uppercase' }}>
+                        ✨ Mutual Match
+                      </span>
+                    )}
+                    {isPending && (
+                      <span style={{ fontSize: '0.65rem', fontWeight: 700, padding: '0.2rem 0.55rem', borderRadius: 'var(--radius-full)', backgroundColor: '#ecfdf5', color: '#047857', border: '1px solid #a7f3d0', textTransform: 'uppercase', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                        ⏳ Proposal Sent
+                      </span>
+                    )}
+                    {isAccepted && (
+                      <span style={{ fontSize: '0.65rem', fontWeight: 700, padding: '0.2rem 0.55rem', borderRadius: 'var(--radius-full)', backgroundColor: '#eff6ff', color: '#1d4ed8', border: '1px solid #bfdbfe', textTransform: 'uppercase', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                        🤝 Swap Active
+                      </span>
+                    )}
                   </div>
                 </div>
 
-                {p.mutualMatch && (
-                  <span style={{ fontSize: '0.65rem', fontWeight: 700, padding: '0.2rem 0.5rem', borderRadius: 'var(--radius-full)', backgroundColor: 'var(--color-accent-100)', color: 'var(--color-accent-700)', textTransform: 'uppercase' }}>
-                    ✨ Mutual Match
-                  </span>
-                )}
-              </div>
-
-              {/* Skills Exchange Box */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)', padding: 'var(--space-3)', backgroundColor: 'var(--color-slate-50)', borderRadius: 'var(--radius-md)', fontSize: 'var(--font-size-xs)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ color: 'var(--text-muted)', fontWeight: 600 }}>TEACHES:</span>
-                  <SkillTag name={p.teaches} type="wanted" />
+                {/* Skills Exchange Box */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)', padding: 'var(--space-3)', backgroundColor: 'var(--color-slate-50)', borderRadius: 'var(--radius-md)', fontSize: 'var(--font-size-xs)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ color: 'var(--text-muted)', fontWeight: 600 }}>TEACHES:</span>
+                    <SkillTag name={p.teaches} type="wanted" />
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ color: 'var(--text-muted)', fontWeight: 600 }}>WANTS:</span>
+                    <SkillTag name={p.wants} type="offered" />
+                  </div>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ color: 'var(--text-muted)', fontWeight: 600 }}>WANTS:</span>
-                  <SkillTag name={p.wants} type="offered" />
+
+                <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-secondary)', lineHeight: 1.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                  {p.bio}
+                </p>
+
+                <div style={{ display: 'flex', gap: 'var(--space-2)', marginTop: 'auto' }}>
+                  {isPending ? (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      fullWidth
+                      disabled
+                      style={{
+                        backgroundColor: '#f1f5f9',
+                        color: '#475569',
+                        borderColor: '#cbd5e1',
+                        cursor: 'not-allowed',
+                        fontWeight: 600,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: 'var(--space-1)',
+                      }}
+                    >
+                      ✓ Proposal Sent
+                    </Button>
+                  ) : isAccepted ? (
+                    <Link to="/app/exchanges" style={{ flex: 1, display: 'flex' }}>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        fullWidth
+                        style={{
+                          backgroundColor: '#f0fdf4',
+                          color: '#15803d',
+                          borderColor: '#bbf7d0',
+                          fontWeight: 600,
+                        }}
+                      >
+                        Active Swap →
+                      </Button>
+                    </Link>
+                  ) : (
+                    <Button variant="primary" size="sm" fullWidth onClick={() => handleOpenProposal(p)}>
+                      Propose Swap
+                    </Button>
+                  )}
+                  <Link to={`/user/${p.id}`}>
+                    <Button variant="outline" size="sm">
+                      View Profile
+                    </Button>
+                  </Link>
                 </div>
-              </div>
-
-              <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-secondary)', lineHeight: 1.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                {p.bio}
-              </p>
-
-              <div style={{ display: 'flex', gap: 'var(--space-2)', marginTop: 'auto' }}>
-                <Button variant="primary" size="sm" fullWidth onClick={() => handleOpenProposal(p)}>
-                  Propose Swap
-                </Button>
-                <Link to={`/user/${p.id}`}>
-                  <Button variant="outline" size="sm">
-                    View Profile
-                  </Button>
-                </Link>
-              </div>
-            </Card>
-          ))}
+              </Card>
+            );
+          })}
         </div>
       )}
 

@@ -6,9 +6,12 @@ import { SkillTag } from '../SkillTag/SkillTag';
 export function MatchCard({
   match,
   onProposeSwap,
+  status,
   className = '',
 }) {
   const { user, matchScore, teachesYou, wantsFromYou, sharedSchedule, bio } = match;
+  const isPending = status === 'PENDING';
+  const isAccepted = status === 'ACCEPTED';
 
   return (
     <div className={`ui-card ui-card-hover match-card ${className}`}>
@@ -55,14 +58,47 @@ export function MatchCard({
         <strong>Available:</strong> {sharedSchedule}
       </p>
 
-      <Button
-        variant="primary"
-        size="md"
-        fullWidth
-        onClick={() => onProposeSwap(match)}
-      >
-        Request Skill Swap
-      </Button>
+      {isPending ? (
+        <Button
+          variant="outline"
+          size="md"
+          fullWidth
+          disabled
+          style={{
+            backgroundColor: '#f1f5f9',
+            color: '#475569',
+            borderColor: '#cbd5e1',
+            cursor: 'not-allowed',
+            fontWeight: 600,
+          }}
+        >
+          ✓ Proposal Sent
+        </Button>
+      ) : isAccepted ? (
+        <Button
+          variant="outline"
+          size="md"
+          fullWidth
+          disabled
+          style={{
+            backgroundColor: '#f0fdf4',
+            color: '#15803d',
+            borderColor: '#bbf7d0',
+            fontWeight: 600,
+          }}
+        >
+          🤝 Swap Active
+        </Button>
+      ) : (
+        <Button
+          variant="primary"
+          size="md"
+          fullWidth
+          onClick={() => onProposeSwap(match)}
+        >
+          Request Skill Swap
+        </Button>
+      )}
     </div>
   );
 }
