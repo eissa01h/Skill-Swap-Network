@@ -18,6 +18,7 @@ export function RecommendedMatchesPage() {
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [sentRequests, setSentRequests] = useState([]);
+  const [cancellingId, setCancellingId] = useState(null);
 
   useEffect(() => {
     const fetchMatches = async () => {
@@ -40,14 +41,39 @@ export function RecommendedMatchesPage() {
 
   const getProposalStatus = (user) => {
     if (!user || !sentRequests || sentRequests.length === 0) return null;
-    const req = sentRequests.find(r => {
+    const matching = sentRequests.filter(r => {
       const idMatch = (r.recipient?.id && r.recipient.id === user.id) ||
                       (r.partner?.id && r.partner.id === user.id);
       const nameMatch = (r.recipient?.name && r.recipient.name.toLowerCase() === user.name.toLowerCase()) ||
                         (r.partner?.name && r.partner.name.toLowerCase() === user.name.toLowerCase());
       return idMatch || nameMatch;
     });
-    return req ? req.status : null;
+    if (matching.length === 0) return null;
+    const active = matching.find(r => r.status === 'PENDING' || r.status === 'ACCEPTED');
+    return active ? active.status : matching[0].status;
+  };
+
+  const handleCancelProposal = async (match) => {
+    if (!match?.user || !sentRequests) return;
+    const req = sentRequests.find(r => {
+      const idMatch = (r.recipient?.id && r.recipient.id === match.user.id) ||
+                      (r.partner?.id && r.partner.id === match.user.id);
+      const nameMatch = (r.recipient?.name && r.recipient.name.toLowerCase() === match.user.name.toLowerCase()) ||
+                        (r.partner?.name && r.partner.name.toLowerCase() === match.user.name.toLowerCase());
+      return (idMatch || nameMatch) && r.status === 'PENDING';
+    });
+
+    if (!req) return;
+
+    setCancellingId(match.user.id);
+    try {
+      await exchangeRequestService.cancelRequest(req.id);
+      setSentRequests(prev => prev.map(r => r.id === req.id ? { ...r, status: 'CANCELLED' } : r));
+    } catch (err) {
+      console.error('Failed to cancel proposal:', err);
+    } finally {
+      setCancellingId(null);
+    }
   };
 
   const handleSendProposal = async (e) => {
@@ -114,7 +140,9 @@ export function RecommendedMatchesPage() {
               key={match.id}
               match={match}
               status={getProposalStatus(match.user)}
+              isCancelling={cancellingId === match.user?.id}
               onProposeSwap={(m) => { setErrorMsg(''); setSelectedMatch(m); }}
+              onCancelProposal={handleCancelProposal}
             />
           ))}
         </div>

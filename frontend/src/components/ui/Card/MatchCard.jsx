@@ -6,6 +6,8 @@ import { SkillTag } from '../SkillTag/SkillTag';
 export function MatchCard({
   match,
   onProposeSwap,
+  onCancelProposal,
+  isCancelling = false,
   status,
   className = '',
 }) {
@@ -59,21 +61,41 @@ export function MatchCard({
       </p>
 
       {isPending ? (
-        <Button
-          variant="outline"
-          size="md"
-          fullWidth
-          disabled
-          style={{
-            backgroundColor: '#f1f5f9',
-            color: '#475569',
-            borderColor: '#cbd5e1',
-            cursor: 'not-allowed',
-            fontWeight: 600,
-          }}
-        >
-          ✓ Proposal Sent
-        </Button>
+        <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+          <Button
+            variant="outline"
+            size="md"
+            fullWidth
+            disabled
+            style={{
+              backgroundColor: '#f1f5f9',
+              color: '#475569',
+              borderColor: '#cbd5e1',
+              cursor: 'not-allowed',
+              fontWeight: 600,
+            }}
+          >
+            ✓ Proposal Sent
+          </Button>
+          {onCancelProposal && (
+            <Button
+              variant="outline"
+              size="md"
+              onClick={() => onCancelProposal(match)}
+              loading={isCancelling}
+              title="Cancel proposal"
+              style={{
+                color: '#dc2626',
+                borderColor: '#fca5a5',
+                backgroundColor: '#fef2f2',
+                fontWeight: 600,
+                whiteSpace: 'nowrap',
+              }}
+            >
+              ✕ Cancel
+            </Button>
+          )}
+        </div>
       ) : isAccepted ? (
         <Button
           variant="outline"

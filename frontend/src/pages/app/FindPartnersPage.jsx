@@ -30,6 +30,7 @@ export function FindPartnersPage() {
   const [sending, setSending] = useState(false);
   const [proposalSuccess, setProposalSuccess] = useState(false);
   const [sentRequests, setSentRequests] = useState([]);
+  const [cancellingId, setCancellingId] = useState(null);
 
   useEffect(() => {
     async function fetchPartners() {
@@ -90,16 +91,41 @@ export function FindPartnersPage() {
     }
   };
 
+  const handleCancelProposal = async (partner) => {
+    if (!partner || !sentRequests) return;
+    const req = sentRequests.find(r => {
+      const idMatch = (r.recipient?.id && r.recipient.id === partner.id) ||
+                      (r.partner?.id && r.partner.id === partner.id);
+      const nameMatch = (r.recipient?.name && r.recipient.name.toLowerCase() === partner.name.toLowerCase()) ||
+                        (r.partner?.name && r.partner.name.toLowerCase() === partner.name.toLowerCase());
+      return (idMatch || nameMatch) && r.status === 'PENDING';
+    });
+
+    if (!req) return;
+
+    setCancellingId(partner.id);
+    try {
+      await exchangeRequestService.cancelRequest(req.id);
+      setSentRequests(prev => prev.map(r => r.id === req.id ? { ...r, status: 'CANCELLED' } : r));
+    } catch (err) {
+      console.error('Failed to cancel proposal:', err);
+    } finally {
+      setCancellingId(null);
+    }
+  };
+
   const getProposalStatus = (partner) => {
     if (!partner || !sentRequests || sentRequests.length === 0) return null;
-    const req = sentRequests.find(r => {
+    const matching = sentRequests.filter(r => {
       const idMatch = (r.recipient?.id && r.recipient.id === partner.id) ||
                       (r.partner?.id && r.partner.id === partner.id);
       const nameMatch = (r.recipient?.name && r.recipient.name.toLowerCase() === partner.name.toLowerCase()) ||
                         (r.partner?.name && r.partner.name.toLowerCase() === partner.name.toLowerCase());
       return idMatch || nameMatch;
     });
-    return req ? req.status : null;
+    if (matching.length === 0) return null;
+    const active = matching.find(r => r.status === 'PENDING' || r.status === 'ACCEPTED');
+    return active ? active.status : matching[0].status;
   };
 
   const handleResetFilters = () => {
@@ -208,25 +234,43 @@ export function FindPartnersPage() {
 
                 <div style={{ display: 'flex', gap: 'var(--space-2)', marginTop: 'auto' }}>
                   {isPending ? (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      fullWidth
-                      disabled
-                      style={{
-                        backgroundColor: '#f1f5f9',
-                        color: '#475569',
-                        borderColor: '#cbd5e1',
-                        cursor: 'not-allowed',
-                        fontWeight: 600,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: 'var(--space-1)',
-                      }}
-                    >
-                      ✓ Proposal Sent
-                    </Button>
+                    <>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled
+                        style={{
+                          flex: 1,
+                          backgroundColor: '#f1f5f9',
+                          color: '#475569',
+                          borderColor: '#cbd5e1',
+                          cursor: 'not-allowed',
+                          fontWeight: 600,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: 'var(--space-1)',
+                        }}
+                      >
+                        ✓ Proposal Sent
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleCancelProposal(p)}
+                        loading={cancellingId === p.id}
+                        title="Cancel and withdraw proposal"
+                        style={{
+                          color: '#dc2626',
+                          borderColor: '#fca5a5',
+                          backgroundColor: '#fef2f2',
+                          fontWeight: 600,
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        ✕ Cancel
+                      </Button>
+                    </>
                   ) : isAccepted ? (
                     <Link to="/app/exchanges" style={{ flex: 1, display: 'flex' }}>
                       <Button
