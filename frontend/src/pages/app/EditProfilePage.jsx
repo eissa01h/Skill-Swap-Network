@@ -5,6 +5,7 @@ import { Card } from '../../components/ui/Card/Card';
 import { Input } from '../../components/ui/Input/Input';
 import { Textarea } from '../../components/ui/Input/Textarea';
 import { Button } from '../../components/ui/Button/Button';
+import { AvatarUpload } from '../../components/ui/AvatarUpload/AvatarUpload';
 import { ErrorMessage } from '../../components/ui/Feedback/ErrorMessage';
 import { useAuth } from '../../hooks/useAuth';
 import { profileService } from '../../services/profileService';
@@ -90,13 +91,12 @@ export function EditProfilePage() {
               onChange={handleChange}
             />
 
-            <Input
-              label="Profile Picture URL"
-              name="avatarUrl"
-              placeholder="https://..."
+            <AvatarUpload
+              label="Profile Photo"
               value={formData.avatarUrl}
-              onChange={handleChange}
-              helperText="Paste any valid image URL or keep default avatar."
+              onChange={(newAvatar) => setFormData((prev) => ({ ...prev, avatarUrl: newAvatar }))}
+              userName={formData.fullName}
+              helperText="Pick any picture from your computer or phone, or provide an image link."
             />
 
             <Input

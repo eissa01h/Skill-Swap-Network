@@ -144,6 +144,19 @@ export const authService = {
     const current = getStored(STORAGE_KEYS.USER, MOCK_CURRENT_USER);
     const updated = { ...current, ...updates };
     setStored(STORAGE_KEYS.USER, updated);
+
+    // Synchronize account record if exists
+    try {
+      const accounts = getStored(STORAGE_KEYS.ACCOUNTS, []);
+      const idx = accounts.findIndex((a) => a.id === updated.id || a.email === updated.email);
+      if (idx >= 0) {
+        accounts[idx] = { ...accounts[idx], ...updates };
+        setStored(STORAGE_KEYS.ACCOUNTS, accounts);
+      }
+    } catch {
+      // Storage access safeguard
+    }
+
     return updated;
   },
 
