@@ -17,6 +17,7 @@ import {
 
 const STORAGE_KEYS = {
   USER: 'ssn_user',
+  ACCOUNTS: 'ssn_accounts',
   TEACHING_SKILLS: 'ssn_teaching_skills',
   LEARNING_INTERESTS: 'ssn_learning_interests',
   MATCHES: 'ssn_matches',
@@ -62,10 +63,40 @@ export const authService = {
     }
     const clean = String(email).trim().toLowerCase();
     const isAdmin = clean === 'eissa.ej05@gmailcom' || clean === 'eissa.ej05@gmail.com';
-    const role = isAdmin ? 'ROLE_ADMIN' : 'ROLE_USER';
-    const user = isAdmin
-      ? { ...MOCK_ADMIN_USER, email: clean, role: 'ROLE_ADMIN', fullName: 'Eissa (Admin)' }
-      : { ...MOCK_CURRENT_USER, email: clean, role: 'ROLE_USER' };
+
+    const accounts = getStored(STORAGE_KEYS.ACCOUNTS, []);
+    const found = accounts.find((a) => a.email === clean);
+
+    // If it's the designated platform administrator, grant admin session
+    if (isAdmin) {
+      const adminUser = {
+        ...MOCK_ADMIN_USER,
+        id: found?.id || 'usr_admin_1',
+        email: clean,
+        role: 'ROLE_ADMIN',
+        fullName: found?.fullName || 'Eissa (Admin)',
+        name: found?.fullName || 'Eissa (Admin)',
+        token: `admin_token_${Date.now()}`,
+      };
+      setStored(STORAGE_KEYS.USER, adminUser);
+      return adminUser;
+    }
+
+    // Regular users must have a created account
+    if (!found) {
+      throw new Error('No account found with these details. Please create an account first');
+    }
+
+    if (found.password && found.password !== password) {
+      throw new Error('Invalid login credentials. Please check your password.');
+    }
+
+    const user = {
+      ...MOCK_CURRENT_USER,
+      ...found,
+      role: 'ROLE_USER',
+      token: `token_${Date.now()}`,
+    };
     setStored(STORAGE_KEYS.USER, user);
     return user;
   },
@@ -77,17 +108,33 @@ export const authService = {
     const clean = String(formData.email).trim().toLowerCase();
     const isAdmin = clean === 'eissa.ej05@gmailcom' || clean === 'eissa.ej05@gmail.com';
     const role = isAdmin ? 'ROLE_ADMIN' : 'ROLE_USER';
-    const newUser = {
-      ...MOCK_CURRENT_USER,
+
+    const accounts = getStored(STORAGE_KEYS.ACCOUNTS, []);
+    const existingIndex = accounts.findIndex((a) => a.email === clean);
+
+    const accountRecord = {
       id: `usr_${Date.now()}`,
-      fullName: formData.fullName,
+      fullName: formData.fullName.trim(),
       email: clean,
+      password: formData.password,
       role: role,
       location: formData.location || 'Remote',
       bio: formData.bio || 'New member on Skill Swap Network.',
       averageRating: 5.0,
       totalReviews: 0,
       completedSwaps: 0,
+    };
+
+    if (existingIndex >= 0) {
+      accounts[existingIndex] = accountRecord;
+    } else {
+      accounts.push(accountRecord);
+    }
+    setStored(STORAGE_KEYS.ACCOUNTS, accounts);
+
+    const newUser = {
+      ...accountRecord,
+      token: `token_${Date.now()}`,
     };
     setStored(STORAGE_KEYS.USER, newUser);
     return newUser;
