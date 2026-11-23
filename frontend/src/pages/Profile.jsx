@@ -14,10 +14,7 @@ export function Profile() {
 
       <Card title={user?.fullName || 'User Profile'} subtitle={user?.email}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-4)', marginTop: 'var(--spacing-4)' }}>
-          <div>
-            <strong>Location / Timezone:</strong>
-            <p style={{ color: 'var(--text-muted)' }}>{user?.location || 'Not specified'}</p>
-          </div>
+
           <div>
             <strong>Bio:</strong>
             <p style={{ color: 'var(--text-muted)' }}>{user?.bio || 'No bio added yet.'}</p>

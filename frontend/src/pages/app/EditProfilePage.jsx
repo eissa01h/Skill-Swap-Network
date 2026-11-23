@@ -16,7 +16,6 @@ export function EditProfilePage() {
   const [formData, setFormData] = useState({
     fullName: user?.fullName || '',
     title: user?.title || '',
-    location: user?.location || '',
     availability: user?.availability || '',
     bio: user?.bio || '',
     avatarUrl: user?.avatarUrl || '',
@@ -75,22 +74,13 @@ export function EditProfilePage() {
           )}
 
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
-              <Input
-                label="Full Name"
-                name="fullName"
-                required
-                value={formData.fullName}
-                onChange={handleChange}
-              />
-              <Input
-                label="Location / Timezone"
-                name="location"
-                placeholder="e.g. San Francisco, CA (PST)"
-                value={formData.location}
-                onChange={handleChange}
-              />
-            </div>
+            <Input
+              label="Full Name"
+              name="fullName"
+              required
+              value={formData.fullName}
+              onChange={handleChange}
+            />
 
             <Input
               label="Professional Title or Tagline"

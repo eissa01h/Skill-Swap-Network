@@ -8,7 +8,6 @@ export function Register() {
     fullName: '',
     email: '',
     password: '',
-    location: '',
     bio: '',
   });
   const [error, setError] = useState('');
@@ -84,19 +83,7 @@ export function Register() {
               style={{ width: '100%' }}
             />
           </div>
-          <div>
-            <label style={{ display: 'block', marginBottom: 'var(--spacing-1)', fontSize: 'var(--font-size-sm)', fontWeight: 500 }}>
-              Location / Timezone
-            </label>
-            <input
-              type="text"
-              name="location"
-              value={formData.location}
-              onChange={handleChange}
-              placeholder="e.g. New York (UTC-5)"
-              style={{ width: '100%' }}
-            />
-          </div>
+
           <div>
             <label style={{ display: 'block', marginBottom: 'var(--spacing-1)', fontSize: 'var(--font-size-sm)', fontWeight: 500 }}>
               Bio / Interests

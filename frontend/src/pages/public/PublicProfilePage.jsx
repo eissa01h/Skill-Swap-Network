@@ -68,9 +68,11 @@ export function PublicProfilePage() {
               <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-primary-600)', fontWeight: 600 }}>
                 {profile.title || 'Community Member'}
               </p>
-              <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)', marginTop: '2px' }}>
-                📍 {profile.location}
-              </p>
+              {profile.location && (
+                <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)', marginTop: '2px' }}>
+                  📍 {profile.location}
+                </p>
+              )}
 
               <div style={{ display: 'flex', justifyContent: 'center', gap: 'var(--space-6)', margin: 'var(--space-4) 0', padding: 'var(--space-3) 0', borderTop: '1px solid var(--border-subtle)', borderBottom: '1px solid var(--border-subtle)' }}>
                 <div>

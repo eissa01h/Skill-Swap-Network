@@ -13,7 +13,6 @@ export function RegisterPage() {
     fullName: '',
     email: '',
     password: '',
-    location: '',
     bio: '',
   });
   const [error, setError] = useState('');
@@ -37,7 +36,6 @@ export function RegisterPage() {
         fullName: formData.fullName,
         email: formData.email,
         password: formData.password,
-        location: formData.location,
         bio: formData.bio,
       });
 
@@ -97,25 +95,15 @@ export function RegisterPage() {
           <ErrorMessage message={error} />
 
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
-              <Input
-                label="Full Name"
-                name="fullName"
-                required
-                placeholder="e.g. Alex Johnson"
-                value={formData.fullName}
-                onChange={handleChange}
-                disabled={submitting || !!successMessage}
-              />
-              <Input
-                label="Location / Timezone"
-                name="location"
-                placeholder="e.g. Austin, TX (CST)"
-                value={formData.location}
-                onChange={handleChange}
-                disabled={submitting || !!successMessage}
-              />
-            </div>
+            <Input
+              label="Full Name"
+              name="fullName"
+              required
+              placeholder="e.g. Alex Johnson"
+              value={formData.fullName}
+              onChange={handleChange}
+              disabled={submitting || !!successMessage}
+            />
 
             <Input
               label="Email Address"
