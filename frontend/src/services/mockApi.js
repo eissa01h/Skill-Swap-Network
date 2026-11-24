@@ -518,6 +518,43 @@ export const messageService = {
     setStored(STORAGE_KEYS.MESSAGES, updated);
     return newMsg;
   },
+
+  async deleteMessage(partnerId, messageId) {
+    const conversations = getStored(STORAGE_KEYS.MESSAGES, MOCK_MESSAGES);
+    const updated = conversations.map(c => {
+      if (c.partner.id === partnerId || c.id === partnerId) {
+        return {
+          ...c,
+          thread: c.thread.filter(m => m.id !== messageId),
+        };
+      }
+      return c;
+    });
+    setStored(STORAGE_KEYS.MESSAGES, updated);
+    return true;
+  },
+
+  async deleteConversation(partnerId) {
+    const conversations = getStored(STORAGE_KEYS.MESSAGES, MOCK_MESSAGES);
+    const updated = conversations.filter(c => c.partner.id !== partnerId && c.id !== partnerId);
+    setStored(STORAGE_KEYS.MESSAGES, updated);
+    return true;
+  },
+
+  async clearConversation(partnerId) {
+    const conversations = getStored(STORAGE_KEYS.MESSAGES, MOCK_MESSAGES);
+    const updated = conversations.map(c => {
+      if (c.partner.id === partnerId || c.id === partnerId) {
+        return {
+          ...c,
+          thread: [],
+        };
+      }
+      return c;
+    });
+    setStored(STORAGE_KEYS.MESSAGES, updated);
+    return true;
+  },
 };
 
 // -------------------------------------------------------------

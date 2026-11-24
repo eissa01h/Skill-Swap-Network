@@ -36,6 +36,39 @@ export const messageService = {
       throw err;
     }
   },
+
+  async deleteMessage(conversationId, messageId) {
+    try {
+      return await apiClient.delete(`/conversations/${conversationId}/messages/${messageId}`);
+    } catch (err) {
+      if (isBackendUnavailable(err)) {
+        return await mockMessages.deleteMessage(conversationId, messageId);
+      }
+      throw err;
+    }
+  },
+
+  async deleteConversation(conversationId) {
+    try {
+      return await apiClient.delete(`/conversations/${conversationId}`);
+    } catch (err) {
+      if (isBackendUnavailable(err)) {
+        return await mockMessages.deleteConversation(conversationId);
+      }
+      throw err;
+    }
+  },
+
+  async clearConversation(conversationId) {
+    try {
+      return await apiClient.post(`/conversations/${conversationId}/clear`);
+    } catch (err) {
+      if (isBackendUnavailable(err)) {
+        return await mockMessages.clearConversation(conversationId);
+      }
+      throw err;
+    }
+  },
 };
 
 export default messageService;
