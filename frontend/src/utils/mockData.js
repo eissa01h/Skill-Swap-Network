@@ -165,7 +165,7 @@ export const MOCK_EXCHANGE_REQUESTS = {
       theyOffer: 'German Conversation & Grammar',
       theyWant: 'React & Modern Frontend',
       proposedSchedule: 'Twice a week, 45 minutes each',
-      message: 'Hi Sarah! Loved your profile. I am a UX designer looking to code my own prototypes in React, and I can teach you fluent German in return!',
+      message: 'Hello! Loved your profile. I am a UX designer looking to code my own prototypes in React, and I can teach you fluent German in return!',
       date: '2 hours ago',
       status: 'PENDING',
     },
@@ -283,10 +283,10 @@ export const MOCK_MESSAGES = [
       status: 'Online',
     },
     thread: [
-      { id: 't1', sender: 'Carlos', text: '¡Hola Sarah! Are we still set for Saturday at 11 AM?', time: '10:32 AM', isSelf: false },
-      { id: 't2', sender: 'Sarah', text: 'Yes, definitely! I prepared some flashcards for our conversation drill.', time: '10:35 AM', isSelf: true },
+      { id: 't1', sender: 'Carlos', text: '¡Hola! Are we still set for Saturday at 11 AM?', time: '10:32 AM', isSelf: false },
+      { id: 't2', sender: 'You', text: 'Yes, definitely! I prepared some flashcards for our conversation drill.', time: '10:35 AM', isSelf: true },
       { id: 't3', sender: 'Carlos', text: 'Awesome! And I have my React project repository ready for code review.', time: '10:36 AM', isSelf: false },
-      { id: 't4', sender: 'Sarah', text: 'Perfect. Looking forward to it!', time: '10:38 AM', isSelf: true },
+      { id: 't4', sender: 'You', text: 'Perfect. Looking forward to it!', time: '10:38 AM', isSelf: true },
     ],
   },
   {
@@ -298,8 +298,8 @@ export const MOCK_MESSAGES = [
       status: 'Offline',
     },
     thread: [
-      { id: 't5', sender: 'Elena', text: 'Thanks again for the review Sarah! It was such a pleasure learning Python with you.', time: 'Nov 16', isSelf: false },
-      { id: 't6', sender: 'Sarah', text: 'Thank you Elena! I already edited 30 photos with the preset we made.', time: 'Nov 16', isSelf: true },
+      { id: 't5', sender: 'Elena', text: 'Thanks again for the review! It was such a pleasure learning Python with you.', time: 'Nov 16', isSelf: false },
+      { id: 't6', sender: 'You', text: 'Thank you Elena! I already edited 30 photos with the preset we made.', time: 'Nov 16', isSelf: true },
     ],
   },
 ];

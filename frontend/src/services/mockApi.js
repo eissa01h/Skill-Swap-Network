@@ -395,7 +395,17 @@ export const matchService = {
 // -------------------------------------------------------------
 export const swapService = {
   async getIncomingRequests() {
-    return getStored(STORAGE_KEYS.REQUESTS_INCOMING, MOCK_EXCHANGE_REQUESTS.incoming);
+    const list = getStored(STORAGE_KEYS.REQUESTS_INCOMING, MOCK_EXCHANGE_REQUESTS.incoming);
+    const currentUser = getStored(STORAGE_KEYS.USER, null);
+    const userName = currentUser?.fullName || currentUser?.name || '';
+    const firstName = userName ? (userName.split(' ')[0] || userName) : '';
+
+    return list.map(req => ({
+      ...req,
+      message: req.message
+        ? (firstName ? req.message.replace(/\bSarah\b/gi, firstName) : req.message.replace(/Hi Sarah!/gi, 'Hi!'))
+        : req.message,
+    }));
   },
 
   async getOutgoingRequests() {
@@ -491,15 +501,32 @@ export const swapService = {
 // -------------------------------------------------------------
 export const messageService = {
   async getConversations() {
-    return getStored(STORAGE_KEYS.MESSAGES, MOCK_MESSAGES);
+    const list = getStored(STORAGE_KEYS.MESSAGES, MOCK_MESSAGES);
+    const currentUser = getStored(STORAGE_KEYS.USER, null);
+    const userName = currentUser?.fullName || currentUser?.name || '';
+    const firstName = userName ? (userName.split(' ')[0] || userName) : '';
+
+    return list.map(c => ({
+      ...c,
+      thread: c.thread.map(m => ({
+        ...m,
+        sender: m.isSelf ? (firstName || 'You') : m.sender,
+        text: m.text
+          ? (firstName ? m.text.replace(/\bSarah\b/gi, firstName) : m.text.replace(/(¡Hola|Hi) Sarah!/gi, '$1!'))
+          : m.text,
+      })),
+    }));
   },
 
   async sendMessage(partnerId, text) {
     if (!text.trim()) return null;
     const conversations = getStored(STORAGE_KEYS.MESSAGES, MOCK_MESSAGES);
+    const currentUser = getStored(STORAGE_KEYS.USER, null);
+    const senderName = currentUser?.fullName?.split(' ')[0] || currentUser?.name?.split(' ')[0] || 'You';
+
     const newMsg = {
       id: `t_${Date.now()}`,
-      sender: 'Sarah',
+      sender: senderName,
       text: text.trim(),
       time: 'Just now',
       isSelf: true,
@@ -599,10 +626,14 @@ export const reviewService = {
       throw new Error('Please write a feedback comment.');
     }
     const reviews = getStored(STORAGE_KEYS.REVIEWS, MOCK_REVIEWS);
+    const currentUser = getStored(STORAGE_KEYS.USER, null);
+    const authorName = currentUser?.fullName || currentUser?.name || 'Skill Swap Member';
+    const authorAvatar = currentUser?.avatarUrl || 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&auto=format&fit=crop&q=80';
+
     const newReview = {
       id: `rev_${Date.now()}`,
-      authorName: 'Sarah Chen',
-      authorAvatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&auto=format&fit=crop&q=80',
+      authorName,
+      authorAvatar,
       skillTaught: skill || 'Conversational Spanish',
       rating: Number(rating) || 5,
       date: 'Today',

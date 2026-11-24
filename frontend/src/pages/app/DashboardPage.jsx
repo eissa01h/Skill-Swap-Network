@@ -310,7 +310,7 @@ export function DashboardPage() {
             </div>
 
             <a
-              href="https://meet.jit.si/skillswap-carlos-sarah"
+              href="https://meet.jit.si/skillswap-session-room"
               target="_blank"
               rel="noreferrer"
             >
