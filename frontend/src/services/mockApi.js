@@ -367,6 +367,7 @@ export const matchService = {
     if (found) {
       return {
         ...found,
+        avatar: found.avatar || found.avatarUrl,
         teachingSkills: [
           { name: found.teaches, level: 'ADVANCED', description: 'Experienced practitioner.' }
         ],
@@ -375,6 +376,26 @@ export const matchService = {
         ],
       };
     }
+
+    const accounts = getStored(STORAGE_KEYS.ACCOUNTS, []);
+    const account = accounts.find(a => a.id === userId || a.email === userId);
+    if (account) {
+      return {
+        id: account.id,
+        name: account.fullName || account.name || 'Member',
+        fullName: account.fullName || account.name || 'Member',
+        avatar: account.avatarUrl || 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&auto=format&fit=crop&q=80',
+        avatarUrl: account.avatarUrl || 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&auto=format&fit=crop&q=80',
+        title: account.title || 'Community Member',
+        location: account.location || 'Remote',
+        rating: account.averageRating || 5.0,
+        reviewsCount: account.totalReviews || 0,
+        bio: account.bio || 'New member on Skill Swap Network.',
+        teachingSkills: [{ name: 'Web Development', level: 'ADVANCED' }],
+        learningGoals: [{ name: 'Conversational Spanish', targetLevel: 'BEGINNER' }],
+      };
+    }
+
     return {
       id: userId,
       name: 'Community Member',
@@ -387,6 +408,10 @@ export const matchService = {
       teachingSkills: [{ name: 'Web Development', level: 'ADVANCED' }],
       learningGoals: [{ name: 'Conversational French', targetLevel: 'BEGINNER' }],
     };
+  },
+
+  async getPartnerPublicProfile(userId) {
+    return await this.getPublicProfile(userId);
   },
 };
 

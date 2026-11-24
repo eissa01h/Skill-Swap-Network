@@ -35,6 +35,23 @@ export function PublicProfilePage() {
     );
   }
 
+  if (!profile) {
+    return (
+      <PublicLayout>
+        <div className="container" style={{ padding: 'var(--space-16) var(--space-4)', textAlign: 'center' }}>
+          <div style={{ fontSize: '3rem', marginBottom: 'var(--space-3)' }}>👤</div>
+          <h2 style={{ fontSize: 'var(--font-size-2xl)', fontWeight: 700 }}>Profile Not Found</h2>
+          <p style={{ color: 'var(--text-secondary)', marginTop: 'var(--space-2)' }}>
+            We could not find the public profile you were looking for.
+          </p>
+          <Link to="/app/find-partners" style={{ marginTop: 'var(--space-6)', display: 'inline-block' }}>
+            <Button variant="primary">Browse Partner Directory</Button>
+          </Link>
+        </div>
+      </PublicLayout>
+    );
+  }
+
   return (
     <PublicLayout>
       <div className="container" style={{ padding: 'var(--space-12) var(--space-4)', maxWidth: '960px' }}>
@@ -51,8 +68,8 @@ export function PublicProfilePage() {
           <Card>
             <div style={{ textAlign: 'center' }}>
               <img
-                src={profile.avatar || profile.avatarUrl}
-                alt={profile.name || profile.fullName}
+                src={profile?.avatar || profile?.avatarUrl || 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&auto=format&fit=crop&q=80'}
+                alt={profile?.name || profile?.fullName || 'Community Member'}
                 style={{
                   width: '120px',
                   height: '120px',
@@ -63,12 +80,12 @@ export function PublicProfilePage() {
                 }}
               />
               <h2 style={{ fontSize: 'var(--font-size-xl)', fontWeight: 700 }}>
-                {profile.name || profile.fullName}
+                {profile?.name || profile?.fullName || 'Community Member'}
               </h2>
               <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-primary-600)', fontWeight: 600 }}>
-                {profile.title || 'Community Member'}
+                {profile?.title || 'Community Member'}
               </p>
-              {profile.location && (
+              {profile?.location && (
                 <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)', marginTop: '2px' }}>
                   📍 {profile.location}
                 </p>

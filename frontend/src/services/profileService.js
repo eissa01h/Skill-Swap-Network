@@ -52,7 +52,13 @@ export const profileService = {
   },
 
   async getPublicProfile(userId) {
-    return await mockMatch.getPartnerPublicProfile(userId);
+    if (mockMatch.getPublicProfile) {
+      return await mockMatch.getPublicProfile(userId);
+    }
+    if (mockMatch.getPartnerPublicProfile) {
+      return await mockMatch.getPartnerPublicProfile(userId);
+    }
+    return null;
   },
 };
 
