@@ -16,6 +16,7 @@ export function MessagesPage() {
   // Deletion modal state
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [conversationToDelete, setConversationToDelete] = useState(null);
+  const [messageToDelete, setMessageToDelete] = useState(null);
 
   useEffect(() => {
     async function load() {
@@ -44,11 +45,12 @@ export function MessagesPage() {
     setInputText('');
   };
 
-  const handleDeleteMessage = async (messageId) => {
-    if (!activePartnerId) return;
-    await messageService.deleteMessage(activePartnerId, messageId);
+  const handleConfirmDeleteMessage = async () => {
+    if (!activePartnerId || !messageToDelete) return;
+    await messageService.deleteMessage(activePartnerId, messageToDelete.id);
     const updated = await messageService.getConversations();
     setConversations(updated);
+    setMessageToDelete(null);
   };
 
   const handleClearCurrentChat = async () => {
@@ -260,7 +262,7 @@ export function MessagesPage() {
                         {/* Delete Single Message Button */}
                         <button
                           type="button"
-                          onClick={() => handleDeleteMessage(msg.id)}
+                          onClick={() => setMessageToDelete(msg)}
                           title="Delete message"
                           style={{
                             background: 'none',
@@ -313,6 +315,55 @@ export function MessagesPage() {
           )}
         </div>
       )}
+
+      {/* Delete Message Confirmation Modal */}
+      <Modal
+        isOpen={!!messageToDelete}
+        onClose={() => setMessageToDelete(null)}
+        title="Delete Message?"
+      >
+        {messageToDelete && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+            <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-secondary)' }}>
+              Are you sure you want to delete this message? This action cannot be undone.
+            </p>
+
+            {/* Message Preview Box */}
+            <div
+              style={{
+                padding: 'var(--space-3) var(--space-4)',
+                backgroundColor: 'var(--color-slate-50)',
+                border: '1px solid var(--border-subtle)',
+                borderRadius: 'var(--radius-md)',
+                fontSize: 'var(--font-size-sm)',
+                color: 'var(--text-primary)',
+                fontStyle: 'italic',
+                wordBreak: 'break-word',
+                borderLeft: '3px solid var(--color-danger, #dc2626)',
+              }}
+            >
+              "{messageToDelete.text}"
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)', marginTop: 'var(--space-2)' }}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setMessageToDelete(null)}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="danger"
+                size="sm"
+                onClick={handleConfirmDeleteMessage}
+              >
+                Delete Message
+              </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
 
       {/* Delete DM Modal */}
       <Modal
