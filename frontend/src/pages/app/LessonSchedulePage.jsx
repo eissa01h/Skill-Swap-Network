@@ -21,7 +21,6 @@ export function LessonSchedulePage() {
     topic: '',
     type: 'TEACHING',
     dateTime: '',
-    meetingLink: 'https://meet.jit.si/skillswap-session',
   });
 
   const loadLessons = async () => {
@@ -62,7 +61,6 @@ export function LessonSchedulePage() {
         topic: '',
         type: 'TEACHING',
         dateTime: '',
-        meetingLink: 'https://meet.jit.si/skillswap-session',
       });
     } catch (err) {
       setErrorMsg(err.message || 'Failed to schedule lesson.');
@@ -74,7 +72,7 @@ export function LessonSchedulePage() {
   return (
     <AppLayout
       title="Lesson Schedule"
-      subtitle="Upcoming exchange sessions and mutual video meeting links."
+      subtitle="Upcoming exchange sessions and scheduled peer lessons."
       actions={
         <Button variant="primary" size="md" onClick={() => { setErrorMsg(''); setModalOpen(true); }}>
           + Schedule New Session
@@ -118,13 +116,6 @@ export function LessonSchedulePage() {
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
                   <StatusBadge status={item.status} />
-                  {item.meetingLink && item.status === 'UPCOMING' && (
-                    <a href={item.meetingLink} target="_blank" rel="noreferrer">
-                      <Button variant="primary" size="sm">
-                        Join Video Call ↗
-                      </Button>
-                    </a>
-                  )}
                 </div>
               </div>
             </Card>
@@ -176,13 +167,6 @@ export function LessonSchedulePage() {
             placeholder="e.g. Next Saturday, 11:00 AM PST"
             value={newLesson.dateTime}
             onChange={(e) => setNewLesson({ ...newLesson, dateTime: e.target.value })}
-          />
-
-          <Input
-            label="Video Room URL"
-            value={newLesson.meetingLink}
-            onChange={(e) => setNewLesson({ ...newLesson, meetingLink: e.target.value })}
-            helperText="Default room generated using free Jitsi Meet."
           />
 
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)', marginTop: 'var(--space-2)' }}>
