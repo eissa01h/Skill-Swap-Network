@@ -7,6 +7,7 @@ import { MatchCard } from '../../components/ui/Card/MatchCard';
 import { StatusBadge } from '../../components/ui/Badge/StatusBadge';
 import { SkillTag } from '../../components/ui/SkillTag/SkillTag';
 import { Button } from '../../components/ui/Button/Button';
+import { Input } from '../../components/ui/Input/Input';
 import { Modal } from '../../components/ui/Modal/Modal';
 import { Textarea } from '../../components/ui/Input/Textarea';
 import { Spinner } from '../../components/ui/Feedback/Spinner';
@@ -27,8 +28,16 @@ export function DashboardPage() {
 
   // Proposal modal state
   const [selectedMatch, setSelectedMatch] = useState(null);
+  const [offeredSkill, setOfferedSkill] = useState('');
   const [proposalMsg, setProposalMsg] = useState('');
   const [proposalSuccess, setProposalSuccess] = useState(false);
+
+  const handleOpenProposal = (m) => {
+    const initialOffer = m.wantsFromYou || (teachingSkills[0]?.name) || '';
+    setSelectedMatch(m);
+    setOfferedSkill(initialOffer);
+    setProposalMsg(`Hi ${m.user?.name}! I saw our matching skills. I can offer mentoring in ${initialOffer || 'my skill'} in exchange for ${m.teachesYou || 'your skill'}.`);
+  };
 
   useEffect(() => {
     async function loadDashboardData() {
@@ -72,9 +81,9 @@ export function DashboardPage() {
 
     await swapService.createProposal({
       partner: selectedMatch.user,
-      youOffer: selectedMatch.wantsFromYou,
+      youOffer: offeredSkill.trim() || selectedMatch.wantsFromYou || 'Skill Mentoring',
       youWant: selectedMatch.teachesYou,
-      message: proposalMsg,
+      message: proposalMsg.trim() || `Hi ${selectedMatch.user?.name}! I'd love to swap skills with you.`,
       proposedSchedule: selectedMatch.sharedSchedule,
     });
 
@@ -83,6 +92,7 @@ export function DashboardPage() {
       setProposalSuccess(false);
       setSelectedMatch(null);
       setProposalMsg('');
+      setOfferedSkill('');
     }, 1200);
   };
 
@@ -203,7 +213,7 @@ export function DashboardPage() {
             {matches.length > 0 && (
               <MatchCard
                 match={matches[0]}
-                onProposeSwap={(m) => setSelectedMatch(m)}
+                onProposeSwap={(m) => handleOpenProposal(m)}
               />
             )}
           </div>
@@ -377,9 +387,46 @@ export function DashboardPage() {
         ) : (
           <form onSubmit={handleSendProposal} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
             <div style={{ padding: 'var(--space-3)', backgroundColor: 'var(--color-slate-50)', borderRadius: 'var(--radius-md)', fontSize: 'var(--font-size-xs)' }}>
-              <div><strong>Exchange:</strong> You teach {selectedMatch?.wantsFromYou} ⇄ They teach {selectedMatch?.teachesYou}</div>
+              <div><strong>Exchange:</strong> You offer <span style={{ color: 'var(--color-primary-700)', fontWeight: 600 }}>{offeredSkill || selectedMatch?.wantsFromYou || 'Your Skill'}</span> ⇄ They teach <span style={{ color: 'var(--color-accent-700)', fontWeight: 600 }}>{selectedMatch?.teachesYou}</span></div>
               <div style={{ marginTop: '2px', color: 'var(--text-muted)' }}>Matching Score: {selectedMatch?.matchScore}% Reciprocal</div>
             </div>
+
+            <Input
+              label="Skill You Want to Offer"
+              required
+              value={offeredSkill}
+              onChange={(e) => setOfferedSkill(e.target.value)}
+              placeholder="Write any skill you want to offer (e.g. React Architecture, Piano, Spanish...)"
+              helperText="Write or customize whatever skill you want to teach in this swap."
+            />
+
+            {teachingSkills.length > 0 && (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-2)', marginTop: '-8px' }}>
+                <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)', alignSelf: 'center' }}>Or choose from profile:</span>
+                {teachingSkills.map(s => (
+                  <button
+                    key={s.id}
+                    type="button"
+                    onClick={() => {
+                      setOfferedSkill(s.name);
+                      setProposalMsg(`Hi ${selectedMatch?.user?.name}! I saw our matching skills. I can offer ${s.name} in exchange for ${selectedMatch?.teachesYou}.`);
+                    }}
+                    style={{
+                      fontSize: '0.7rem',
+                      padding: '2px 8px',
+                      borderRadius: 'var(--radius-full)',
+                      border: '1px solid var(--border-subtle)',
+                      backgroundColor: offeredSkill === s.name ? 'var(--color-primary-50)' : 'transparent',
+                      color: offeredSkill === s.name ? 'var(--color-primary-700)' : 'var(--text-secondary)',
+                      cursor: 'pointer',
+                      fontWeight: offeredSkill === s.name ? 600 : 400,
+                    }}
+                  >
+                    {s.name}
+                  </button>
+                ))}
+              </div>
+            )}
 
             <Textarea
               label="Introductory Message & Availability"
@@ -391,7 +438,7 @@ export function DashboardPage() {
             />
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
-              <Button variant="outline" onClick={() => setSelectedMatch(null)}>Cancel</Button>
+              <Button variant="outline" type="button" onClick={() => setSelectedMatch(null)}>Cancel</Button>
               <Button type="submit" variant="primary">Send Proposal</Button>
             </div>
           </form>

@@ -3,6 +3,7 @@ import { AppLayout } from '../../layouts/AppLayout';
 import { MatchCard } from '../../components/ui/Card/MatchCard';
 import { Modal } from '../../components/ui/Modal/Modal';
 import { Button } from '../../components/ui/Button/Button';
+import { Input } from '../../components/ui/Input/Input';
 import { Textarea } from '../../components/ui/Input/Textarea';
 import { Spinner } from '../../components/ui/Feedback/Spinner';
 import { EmptyState } from '../../components/ui/Feedback/EmptyState';
@@ -14,6 +15,7 @@ export function RecommendedMatchesPage() {
   const [matches, setMatches] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedMatch, setSelectedMatch] = useState(null);
+  const [offeredSkill, setOfferedSkill] = useState('');
   const [proposalSent, setProposalSent] = useState(false);
   const [message, setMessage] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -92,7 +94,7 @@ export function RecommendedMatchesPage() {
       setErrorMsg('');
       const created = await exchangeRequestService.createRequest({
         partner: selectedMatch.user,
-        youOffer: selectedMatch.wantsFromYou,
+        youOffer: offeredSkill.trim() || selectedMatch.wantsFromYou || 'Skill Mentoring',
         youWant: selectedMatch.teachesYou,
         message: message.trim(),
         proposedSchedule: '1 session per week',
@@ -146,7 +148,13 @@ export function RecommendedMatchesPage() {
               status={getProposalStatus(match.user)}
               isFriend={friends.some(f => (match.user?.id && f.id === match.user.id) || (match.user?.name && f.name?.toLowerCase() === match.user.name?.toLowerCase()))}
               isCancelling={cancellingId === match.user?.id}
-              onProposeSwap={(m) => { setErrorMsg(''); setSelectedMatch(m); }}
+              onProposeSwap={(m) => {
+                setErrorMsg('');
+                setSelectedMatch(m);
+                const initialOffer = m.wantsFromYou || '';
+                setOfferedSkill(initialOffer);
+                setMessage(`Hi ${m.user?.name}! I noticed our high compatibility match. I'd love to offer mentoring in ${initialOffer || 'my skills'} in exchange for ${m.teachesYou}. Would love to trade sessions on weekends!`);
+              }}
               onCancelProposal={handleCancelProposal}
             />
           ))}
@@ -176,9 +184,18 @@ export function RecommendedMatchesPage() {
             )}
 
             <div style={{ padding: 'var(--space-3)', backgroundColor: 'var(--color-slate-50)', borderRadius: 'var(--radius-md)', fontSize: 'var(--font-size-xs)' }}>
-              <div><strong>Exchange:</strong> {selectedMatch?.teachesYou} ⇄ {selectedMatch?.wantsFromYou}</div>
+              <div><strong>Exchange:</strong> You offer <span style={{ color: 'var(--color-primary-700)', fontWeight: 600 }}>{offeredSkill || selectedMatch?.wantsFromYou || 'Your Skill'}</span> ⇄ They teach <span style={{ color: 'var(--color-accent-700)', fontWeight: 600 }}>{selectedMatch?.teachesYou}</span></div>
               <div style={{ marginTop: '2px', color: 'var(--text-muted)' }}>Compatibility Score: {selectedMatch?.matchScore}%</div>
             </div>
+
+            <Input
+              label="Skill You Want to Offer"
+              required
+              value={offeredSkill}
+              onChange={(e) => setOfferedSkill(e.target.value)}
+              placeholder="Write any skill you want to offer (e.g. React Architecture, Piano, Spanish...)"
+              helperText="Write or customize whatever skill you would like to offer in return."
+            />
 
             <Textarea
               label="Proposal Message & Meeting Preferences"

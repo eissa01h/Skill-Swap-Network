@@ -85,7 +85,9 @@ export function FindPartnersPage() {
 
   const handleOpenProposal = (partner) => {
     setSelectedPartner(partner);
-    setProposalMsg(`Hi ${partner.name}! I'd love to swap skills with you. I can offer mentoring in ${myTeachingSkills[0]?.name || 'web development'} in exchange for ${partner.teaches}.`);
+    const initialOffer = selectedOffer || myTeachingSkills[0]?.name || 'Web Development';
+    setSelectedOffer(initialOffer);
+    setProposalMsg(`Hi ${partner.name}! I'd love to swap skills with you. I can offer mentoring in ${initialOffer} in exchange for ${partner.teaches}.`);
   };
 
   const handleSendProposal = async (e) => {
@@ -385,12 +387,42 @@ export function FindPartnersPage() {
               <div style={{ marginTop: '2px', color: 'var(--text-muted)' }}>Typical Availability: {selectedPartner?.availability || 'Weekends'}</div>
             </div>
 
-            <Select
-              label="Select Which of Your Skills You Will Offer in Return"
-              options={myTeachingSkills.map(s => s.name)}
+            <Input
+              label="Skill You Want to Offer"
+              required
               value={selectedOffer}
               onChange={(e) => setSelectedOffer(e.target.value)}
+              placeholder="Write any skill you want to offer (e.g. React Architecture, Piano, Spanish...)"
+              helperText="Write or customize whatever skill you would like to offer in return."
             />
+
+            {myTeachingSkills.length > 0 && (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-2)', marginTop: '-8px' }}>
+                <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)', alignSelf: 'center' }}>Or choose from profile:</span>
+                {myTeachingSkills.map(s => (
+                  <button
+                    key={s.id}
+                    type="button"
+                    onClick={() => {
+                      setSelectedOffer(s.name);
+                      setProposalMsg(`Hi ${selectedPartner?.name}! I'd love to swap skills with you. I can offer mentoring in ${s.name} in exchange for ${selectedPartner?.teaches}.`);
+                    }}
+                    style={{
+                      fontSize: '0.7rem',
+                      padding: '2px 8px',
+                      borderRadius: 'var(--radius-full)',
+                      border: '1px solid var(--border-subtle)',
+                      backgroundColor: selectedOffer === s.name ? 'var(--color-primary-50)' : 'transparent',
+                      color: selectedOffer === s.name ? 'var(--color-primary-700)' : 'var(--text-secondary)',
+                      cursor: 'pointer',
+                      fontWeight: selectedOffer === s.name ? 600 : 400,
+                    }}
+                  >
+                    {s.name}
+                  </button>
+                ))}
+              </div>
+            )}
 
             <Textarea
               label="Personalized Proposal Message"
