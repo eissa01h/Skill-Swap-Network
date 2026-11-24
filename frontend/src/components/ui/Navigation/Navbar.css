@@ -25,16 +25,17 @@
 }
 
 .brand-icon {
-  width: 34px;
-  height: 34px;
-  background: linear-gradient(135deg, var(--color-primary-600), var(--color-accent-600));
+  width: 36px;
+  height: 36px;
+  background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
   border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
   color: #fff;
-  font-size: 1.15rem;
+  font-size: 1.2rem;
   font-weight: 700;
+  box-shadow: 0 2px 8px rgba(220, 39, 67, 0.3);
 }
 
 .navbar-nav {

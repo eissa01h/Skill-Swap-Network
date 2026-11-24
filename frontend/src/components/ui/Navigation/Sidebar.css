@@ -46,9 +46,10 @@
 }
 
 .sidebar-nav-item.active {
-  background-color: var(--color-primary-50);
-  color: var(--color-primary-700);
-  font-weight: var(--font-weight-semibold);
+  background: linear-gradient(90deg, rgba(225, 48, 108, 0.09) 0%, rgba(131, 58, 180, 0.04) 100%);
+  color: #c13584;
+  font-weight: 700;
+  border-left: 3px solid #e1306c;
 }
 
 .sidebar-icon {

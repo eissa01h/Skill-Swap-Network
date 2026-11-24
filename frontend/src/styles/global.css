@@ -103,6 +103,22 @@ textarea:focus-visible {
   line-height: 1;
 }
 
+/* Instagram Story Ring Effect Utility */
+.ig-story-avatar {
+  background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+  padding: 2.5px;
+  border-radius: var(--radius-full);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ig-story-avatar img {
+  border: 2px solid #ffffff !important;
+  border-radius: var(--radius-full);
+  display: block;
+}
+
 /* Glass & Card Effects */
 .card-surface {
   background-color: var(--bg-surface);

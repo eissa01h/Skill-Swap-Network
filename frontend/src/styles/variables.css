@@ -1,42 +1,54 @@
 /* ==========================================================================
    Skill Swap Network — Design System Tokens & CSS Variables
+   Theme: Modern Instagram-Inspired Aesthetic
    ========================================================================== */
 
 :root {
-  /* Brand Primary: Deep Indigo / Navy */
-  --color-primary-50: #eef2ff;
-  --color-primary-100: #e0e7ff;
-  --color-primary-200: #c7d2fe;
-  --color-primary-300: #a5b4fc;
-  --color-primary-400: #818cf8;
-  --color-primary-500: #6366f1;
-  --color-primary-600: #4f46e5;
-  --color-primary-700: #4338ca;
-  --color-primary-800: #3730a3;
-  --color-primary-900: #1e1b4b;
-  --color-primary-950: #0f172a;
+  /* Brand Primary: Instagram Vibrant Berry / Magenta / Purple Spectrum */
+  --color-primary-50: #fdf2f8;
+  --color-primary-100: #fce7f3;
+  --color-primary-200: #fbcfe8;
+  --color-primary-300: #f472b6;
+  --color-primary-400: #e1306c;  /* Signature Instagram Coral-Pink */
+  --color-primary-500: #d62976;  /* Instagram Magenta */
+  --color-primary-600: #c13584;  /* Instagram Berry */
+  --color-primary-700: #833ab4;  /* Instagram Royal Violet */
+  --color-primary-800: #5851db;  /* Instagram Deep Indigo */
+  --color-primary-900: #405de6;  /* Instagram Deep Royal Blue */
+  --color-primary-950: #1a102f;
 
-  /* Brand Accent: Sophisticated Emerald & Teal */
-  --color-accent-50: #f0fdf4;
-  --color-accent-100: #dcfce7;
-  --color-accent-200: #bbf7d0;
-  --color-accent-300: #86efac;
-  --color-accent-400: #4ade80;
-  --color-accent-500: #10b981;
-  --color-accent-600: #059669;
-  --color-accent-700: #047857;
+  /* Brand Accent: Warm Coral, Sunset Orange & Golden Glow */
+  --color-accent-50: #fff7ed;
+  --color-accent-100: #ffedd5;
+  --color-accent-200: #fed7aa;
+  --color-accent-300: #fdba74;
+  --color-accent-400: #fb923c;
+  --color-accent-500: #f77737;  /* Sunset Orange */
+  --color-accent-600: #f09433;  /* Warm Amber Gold */
+  --color-accent-700: #e1306c;
 
-  /* Neutrals: Cool Slate */
-  --color-slate-50: #f8fafc;
-  --color-slate-100: #f1f5f9;
-  --color-slate-200: #e2e8f0;
-  --color-slate-300: #cbd5e1;
-  --color-slate-400: #94a3b8;
-  --color-slate-500: #64748b;
-  --color-slate-600: #475569;
-  --color-slate-700: #334155;
-  --color-slate-800: #1e293b;
-  --color-slate-900: #0f172a;
+  /* Signature Instagram Gradients */
+  --ig-gradient: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+  --ig-gradient-vibrant: linear-gradient(135deg, #833ab4 0%, #fd1d1d 50%, #fcb045 100%);
+  --ig-gradient-story: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+  --ig-gradient-button: linear-gradient(135deg, #e1306c 0%, #c13584 50%, #833ab4 100%);
+  --ig-gradient-soft: linear-gradient(135deg, rgba(225, 48, 108, 0.08), rgba(131, 58, 180, 0.08));
+
+  /* Instagram Action Blue */
+  --color-ig-blue: #0095f6;
+  --color-ig-blue-hover: #1877f2;
+
+  /* Neutrals: Clean Instagram Web Canvas & Borders */
+  --color-slate-50: #fafafa;
+  --color-slate-100: #f5f5f5;
+  --color-slate-200: #efefef;
+  --color-slate-300: #dbdbdb;  /* Signature Instagram Card Border */
+  --color-slate-400: #a8a8a8;
+  --color-slate-500: #8e8e8e;  /* Instagram Muted Meta / Timestamp */
+  --color-slate-600: #737373;  /* Instagram Secondary Text */
+  --color-slate-700: #555555;
+  --color-slate-800: #363636;
+  --color-slate-900: #262626;  /* Instagram Deep Neutral Heading */
 
   /* Status Tokens */
   --color-success-bg: #ecfdf5;
@@ -48,30 +60,30 @@
   --color-warning-border: #fde68a;
 
   --color-danger-bg: #fef2f2;
-  --color-danger-text: #991b1b;
+  --color-danger-text: #ed4956;  /* Instagram Error Red */
   --color-danger-border: #fecaca;
 
-  --color-info-bg: #eff6ff;
-  --color-info-text: #1e40af;
-  --color-info-border: #bfdbfe;
+  --color-info-bg: #f0f9ff;
+  --color-info-text: #0095f6;
+  --color-info-border: #bae6fd;
 
   /* Semantic Application Colors */
-  --bg-app: #f8fafc;
-  --bg-surface: #ffffff;
-  --bg-subtle: #f1f5f9;
-  --bg-overlay: rgba(15, 23, 42, 0.55);
+  --bg-app: #fafafa;            /* Clean Instagram Web Canvas */
+  --bg-surface: #ffffff;        /* Pure White Cards */
+  --bg-subtle: #f5f5f5;
+  --bg-overlay: rgba(0, 0, 0, 0.65);
 
-  --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --text-muted: #64748b;
+  --text-primary: #262626;      /* Instagram Primary Text */
+  --text-secondary: #737373;    /* Instagram Subtitle Text */
+  --text-muted: #8e8e8e;        /* Instagram Muted Meta */
   --text-inverse: #ffffff;
 
-  --border-subtle: #e2e8f0;
-  --border-strong: #cbd5e1;
-  --border-focus: #6366f1;
+  --border-subtle: #dbdbdb;     /* Instagram Signature Border */
+  --border-strong: #c7c7c7;
+  --border-focus: #e1306c;
 
   /* Typography */
-  --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   --font-size-xs: 0.75rem;    /* 12px */
   --font-size-sm: 0.875rem;   /* 14px */
   --font-size-md: 1rem;       /* 16px */
@@ -102,18 +114,18 @@
 
   /* Border Radii */
   --radius-xs: 4px;
-  --radius-sm: 6px;
+  --radius-sm: 8px;
   --radius-md: 10px;
   --radius-lg: 14px;
   --radius-xl: 20px;
   --radius-full: 9999px;
 
   /* Elevation & Subtle Shadows */
-  --shadow-xs: 0 1px 2px 0 rgba(15, 23, 42, 0.05);
-  --shadow-sm: 0 1px 3px 0 rgba(15, 23, 42, 0.08), 0 1px 2px -1px rgba(15, 23, 42, 0.08);
-  --shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.07), 0 2px 4px -2px rgba(15, 23, 42, 0.05);
-  --shadow-lg: 0 10px 15px -3px rgba(15, 23, 42, 0.08), 0 4px 6px -4px rgba(15, 23, 42, 0.04);
-  --shadow-xl: 0 20px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.04);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.06), 0 1px 2px -1px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 12px -2px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 12px 24px -4px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 32px -6px rgba(0, 0, 0, 0.12);
 
   /* Transitions */
   --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
@@ -122,7 +134,7 @@
   --transition-slow: 350ms var(--ease-in-out);
 
   /* Layout dimensions */
-  --header-height: 70px;
-  --sidebar-width: 260px;
-  --max-width-content: 1240px;
+  --header-height: 64px;
+  --sidebar-width: 250px;
+  --max-width-content: 1200px;
 }
