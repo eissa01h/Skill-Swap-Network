@@ -18,6 +18,7 @@ export function MessagesPage() {
   const [activePartnerId, setActivePartnerId] = useState(null);
   const [inputText, setInputText] = useState('');
   const [loading, setLoading] = useState(true);
+  const [restrictedAlert, setRestrictedAlert] = useState({ show: false, name: '' });
 
   // New Chat modal state
   const [showNewChatModal, setShowNewChatModal] = useState(false);
@@ -37,22 +38,30 @@ export function MessagesPage() {
         let convs = data || [];
 
         if (queryPartnerId) {
-          const existing = convs.find(c => c.partner?.id === queryPartnerId || c.id === queryPartnerId);
-          if (existing) {
-            setActivePartnerId(existing.partner.id);
+          const eligible = await messageService.canMessagePartner(queryPartnerId, queryPartnerName);
+          if (!eligible) {
+            setRestrictedAlert({
+              show: true,
+              name: queryPartnerName || 'this member',
+            });
           } else {
-            const newThread = {
-              id: `conv_${queryPartnerId}`,
-              partner: {
-                id: queryPartnerId,
-                name: queryPartnerName || 'Community Partner',
-                avatar: queryPartnerAvatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&auto=format&fit=crop&q=80',
-                status: 'Online',
-              },
-              thread: [],
-            };
-            convs = [newThread, ...convs];
-            setActivePartnerId(queryPartnerId);
+            const existing = convs.find(c => c.partner?.id === queryPartnerId || c.id === queryPartnerId);
+            if (existing) {
+              setActivePartnerId(existing.partner.id);
+            } else {
+              const newThread = {
+                id: `conv_${queryPartnerId}`,
+                partner: {
+                  id: queryPartnerId,
+                  name: queryPartnerName || 'Community Partner',
+                  avatar: queryPartnerAvatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&auto=format&fit=crop&q=80',
+                  status: 'Online',
+                },
+                thread: [],
+              };
+              convs = [newThread, ...convs];
+              setActivePartnerId(queryPartnerId);
+            }
           }
         } else if (convs.length > 0) {
           setActivePartnerId(convs[0].partner.id);
@@ -71,7 +80,7 @@ export function MessagesPage() {
     setShowNewChatModal(true);
     setLoadingPartners(true);
     try {
-      const list = await searchService.searchPartners({});
+      const list = await messageService.getEligibleChatPartners();
       setAvailablePartners(list || []);
     } catch (err) {
       console.error(err);
@@ -103,10 +112,14 @@ export function MessagesPage() {
     e.preventDefault();
     if (!inputText.trim() || !activePartnerId) return;
 
-    await messageService.sendMessage(activePartnerId, inputText, activeConv?.partner);
-    const updated = await messageService.getConversations();
-    setConversations(updated);
-    setInputText('');
+    try {
+      await messageService.sendMessage(activePartnerId, inputText, activeConv?.partner);
+      const updated = await messageService.getConversations();
+      setConversations(updated);
+      setInputText('');
+    } catch (err) {
+      alert(err.message || 'Direct messaging is only permitted with accepted swap partners and friends.');
+    }
   };
 
   const handleConfirmDeleteMessage = async () => {
@@ -156,6 +169,13 @@ export function MessagesPage() {
       title="Peer Discussions"
       subtitle="Coordinate lesson plans, share code snippets and learning materials with your swap partners."
     >
+      {restrictedAlert.show && (
+        <div style={{ backgroundColor: '#fffbeb', border: '1px solid #fef3c7', borderRadius: 'var(--radius-md)', padding: 'var(--space-3) var(--space-4)', marginBottom: 'var(--space-4)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: '#92400e', fontSize: 'var(--font-size-sm)' }}>
+          <span>🔒 <strong>Direct Messaging Restricted:</strong> You can only message members who have accepted your swap proposal or are your friends ({restrictedAlert.name} has not yet accepted a swap or connected).</span>
+          <button onClick={() => setRestrictedAlert({ show: false, name: '' })} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#92400e', fontWeight: 700 }}>✕</button>
+        </div>
+      )}
+
       {conversations.length === 0 ? (
         <EmptyState
           icon="💬"
@@ -506,16 +526,16 @@ export function MessagesPage() {
       <Modal
         isOpen={showNewChatModal}
         onClose={() => setShowNewChatModal(false)}
-        title="Start a Direct Chat"
+        title="Start a Chat with a Partner or Friend"
       >
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
           <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-secondary)' }}>
-            Choose any community partner to message and coordinate skill exchanges directly:
+            Direct messaging is available with <strong>accepted swap partners</strong> and <strong>friends</strong>:
           </p>
 
           <input
             type="text"
-            placeholder="Search partners by name or skill..."
+            placeholder="Filter partners or friends by name..."
             value={partnerSearchQuery}
             onChange={(e) => setPartnerSearchQuery(e.target.value)}
             style={{
@@ -530,15 +550,26 @@ export function MessagesPage() {
           <div style={{ maxHeight: '280px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
             {loadingPartners ? (
               <div style={{ padding: 'var(--space-4)', textAlign: 'center' }}>
-                <Spinner size="sm" message="Loading community members..." />
+                <Spinner size="sm" message="Loading your swap partners & friends..." />
               </div>
             ) : availablePartners.length === 0 ? (
-              <div style={{ padding: 'var(--space-4)', textAlign: 'center', color: 'var(--text-muted)', fontSize: 'var(--font-size-sm)' }}>
-                No partners found.
+              <div style={{ padding: 'var(--space-6)', textAlign: 'center', color: 'var(--text-muted)' }}>
+                <div style={{ fontSize: '2rem', marginBottom: 'var(--space-2)' }}>🤝</div>
+                <p style={{ fontWeight: 600, fontSize: 'var(--font-size-sm)', color: 'var(--text-primary)' }}>
+                  No accepted swap partners or friends yet
+                </p>
+                <p style={{ fontSize: 'var(--font-size-xs)', marginTop: '4px' }}>
+                  Send a swap proposal or add friends in the directory to begin messaging!
+                </p>
+                <Link to="/app/find-partners" style={{ marginTop: 'var(--space-4)', display: 'inline-block' }}>
+                  <Button variant="primary" size="sm">
+                    Browse Partners & Friends →
+                  </Button>
+                </Link>
               </div>
             ) : (
               availablePartners
-                .filter(p => !partnerSearchQuery.trim() || p.name.toLowerCase().includes(partnerSearchQuery.toLowerCase()) || (p.teaches && p.teaches.toLowerCase().includes(partnerSearchQuery.toLowerCase())))
+                .filter(p => !partnerSearchQuery.trim() || p.name.toLowerCase().includes(partnerSearchQuery.toLowerCase()))
                 .map(partner => (
                   <div
                     key={partner.id}
@@ -562,9 +593,22 @@ export function MessagesPage() {
                       style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }}
                     />
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontWeight: 600, fontSize: 'var(--font-size-sm)' }}>{partner.name}</div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                        <span style={{ fontWeight: 600, fontSize: 'var(--font-size-sm)' }}>{partner.name}</span>
+                        <span style={{
+                          fontSize: '0.65rem',
+                          fontWeight: 700,
+                          padding: '1px 6px',
+                          borderRadius: 'var(--radius-full)',
+                          backgroundColor: partner.relationship === 'Friend' ? '#fdf2f8' : '#eff6ff',
+                          color: partner.relationship === 'Friend' ? '#db2777' : '#1d4ed8',
+                          border: `1px solid ${partner.relationship === 'Friend' ? '#fbcfe8' : '#bfdbfe'}`,
+                        }}>
+                          {partner.relationship === 'Friend' ? '⭐ Friend' : '🤝 Swap Partner'}
+                        </span>
+                      </div>
                       <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        Teaches: {partner.teaches || 'Skill Swapper'}
+                        {partner.title || 'Connected'}
                       </div>
                     </div>
                     <Button variant="outline" size="sm" style={{ pointerEvents: 'none' }}>

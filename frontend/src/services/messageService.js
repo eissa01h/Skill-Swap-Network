@@ -69,6 +69,14 @@ export const messageService = {
       throw err;
     }
   },
+
+  async canMessagePartner(partnerId, partnerName = '') {
+    return await mockMessages.canMessagePartner(partnerId, partnerName);
+  },
+
+  async getEligibleChatPartners() {
+    return await mockMessages.getEligibleChatPartners();
+  },
 };
 
 export default messageService;

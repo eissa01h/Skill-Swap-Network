@@ -8,6 +8,7 @@ import { Spinner } from '../../components/ui/Feedback/Spinner';
 import { EmptyState } from '../../components/ui/Feedback/EmptyState';
 import { matchingService } from '../../services/matchingService';
 import { exchangeRequestService } from '../../services/exchangeRequestService';
+import { friendService } from '../../services/friendService';
 
 export function RecommendedMatchesPage() {
   const [matches, setMatches] = useState([]);
@@ -18,18 +19,21 @@ export function RecommendedMatchesPage() {
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [sentRequests, setSentRequests] = useState([]);
+  const [friends, setFriends] = useState([]);
   const [cancellingId, setCancellingId] = useState(null);
 
   useEffect(() => {
     const fetchMatches = async () => {
       try {
         setLoading(true);
-        const [data, outgoing] = await Promise.all([
+        const [data, outgoing, friendList] = await Promise.all([
           matchingService.getRecommendedMatches(),
           exchangeRequestService.getSentRequests(),
+          friendService.getFriends(),
         ]);
         setMatches(data || []);
         setSentRequests(outgoing || []);
+        setFriends(friendList || []);
       } catch (err) {
         console.error(err);
       } finally {
@@ -140,6 +144,7 @@ export function RecommendedMatchesPage() {
               key={match.id}
               match={match}
               status={getProposalStatus(match.user)}
+              isFriend={friends.some(f => (match.user?.id && f.id === match.user.id) || (match.user?.name && f.name?.toLowerCase() === match.user.name?.toLowerCase()))}
               isCancelling={cancellingId === match.user?.id}
               onProposeSwap={(m) => { setErrorMsg(''); setSelectedMatch(m); }}
               onCancelProposal={handleCancelProposal}

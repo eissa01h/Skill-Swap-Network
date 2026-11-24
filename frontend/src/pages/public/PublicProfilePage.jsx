@@ -6,24 +6,64 @@ import { Button } from '../../components/ui/Button/Button';
 import { SkillTag } from '../../components/ui/SkillTag/SkillTag';
 import { Spinner } from '../../components/ui/Feedback/Spinner';
 import { profileService } from '../../services/profileService';
+import { messageService } from '../../services/messageService';
+import { friendService } from '../../services/friendService';
 import { MOCK_REVIEWS } from '../../utils/mockData';
 
 export function PublicProfilePage() {
   const { id } = useParams();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [canText, setCanText] = useState(false);
+  const [isFriend, setIsFriend] = useState(false);
+  const [togglingFriend, setTogglingFriend] = useState(false);
 
   useEffect(() => {
     async function loadProfile() {
       try {
         const data = await profileService.getPublicProfile(id);
         setProfile(data);
+        if (data) {
+          const targetId = data.id || id;
+          const targetName = data.name || data.fullName || '';
+          const [eligible, friend] = await Promise.all([
+            messageService.canMessagePartner(targetId, targetName),
+            friendService.isFriend(targetId, targetName),
+          ]);
+          setCanText(eligible);
+          setIsFriend(friend);
+        }
       } finally {
         setLoading(false);
       }
     }
     loadProfile();
   }, [id]);
+
+  const handleToggleFriend = async () => {
+    if (!profile) return;
+    setTogglingFriend(true);
+    try {
+      const targetId = profile.id || id;
+      const targetName = profile.name || profile.fullName || 'Member';
+      if (isFriend) {
+        await friendService.removeFriend(targetId);
+        setIsFriend(false);
+      } else {
+        await friendService.addFriend({
+          id: targetId,
+          name: targetName,
+          avatar: profile.avatar || profile.avatarUrl,
+          title: profile.title,
+        });
+        setIsFriend(true);
+      }
+      const eligible = await messageService.canMessagePartner(targetId, targetName);
+      setCanText(eligible);
+    } finally {
+      setTogglingFriend(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -105,24 +145,47 @@ export function PublicProfilePage() {
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)', width: '100%' }}>
-                <Link
-                  to={`/app/messages?partnerId=${profile?.id}&partnerName=${encodeURIComponent(profile?.name || profile?.fullName || 'Partner')}&avatar=${encodeURIComponent(profile?.avatar || profile?.avatarUrl || '')}`}
-                  style={{ textDecoration: 'none' }}
-                >
-                  <Button
-                    variant="primary"
-                    size="md"
-                    fullWidth
-                    style={{
-                      background: 'linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)',
-                      color: '#fff',
-                      border: 'none',
-                      fontWeight: 600,
-                    }}
+                {canText ? (
+                  <Link
+                    to={`/app/messages?partnerId=${profile?.id}&partnerName=${encodeURIComponent(profile?.name || profile?.fullName || 'Partner')}&avatar=${encodeURIComponent(profile?.avatar || profile?.avatarUrl || '')}`}
+                    style={{ textDecoration: 'none' }}
                   >
-                    💬 Direct Message & Text
-                  </Button>
-                </Link>
+                    <Button
+                      variant="primary"
+                      size="md"
+                      fullWidth
+                      style={{
+                        background: 'linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)',
+                        color: '#fff',
+                        border: 'none',
+                        fontWeight: 600,
+                      }}
+                    >
+                      💬 Direct Message & Text
+                    </Button>
+                  </Link>
+                ) : (
+                  <div style={{ padding: 'var(--space-2) var(--space-3)', backgroundColor: 'var(--color-slate-50)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)', textAlign: 'center', fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)' }}>
+                    🔒 Direct messaging unlocks when a swap proposal is accepted or you become friends.
+                  </div>
+                )}
+
+                <Button
+                  variant="outline"
+                  size="md"
+                  fullWidth
+                  onClick={handleToggleFriend}
+                  loading={togglingFriend}
+                  style={{
+                    borderColor: isFriend ? '#fbcfe8' : 'var(--border-subtle)',
+                    backgroundColor: isFriend ? '#fdf2f8' : 'transparent',
+                    color: isFriend ? '#db2777' : 'var(--text-secondary)',
+                    fontWeight: isFriend ? 600 : 500,
+                  }}
+                >
+                  {isFriend ? '⭐ Friend (Connected)' : '+ Add as Friend to Text'}
+                </Button>
+
                 <Link to="/app/find-partners" style={{ textDecoration: 'none' }}>
                   <Button variant="outline" size="md" fullWidth>
                     Propose Skill Swap

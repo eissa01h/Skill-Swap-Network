@@ -10,11 +10,13 @@ export function MatchCard({
   onCancelProposal,
   isCancelling = false,
   status,
+  isFriend = false,
   className = '',
 }) {
   const { user, matchScore, teachesYou, wantsFromYou, sharedSchedule, bio } = match;
   const isPending = status === 'PENDING';
   const isAccepted = status === 'ACCEPTED';
+  const canText = isAccepted || isFriend;
 
   return (
     <div className={`ui-card ui-card-hover match-card ${className}`}>
@@ -124,14 +126,16 @@ export function MatchCard({
       )}
 
       <div style={{ display: 'flex', gap: 'var(--space-2)', marginTop: 'var(--space-2)' }}>
-        <Link
-          to={`/app/messages?partnerId=${user.id}&partnerName=${encodeURIComponent(user.name)}&avatar=${encodeURIComponent(user.avatar)}`}
-          style={{ flex: 1, textDecoration: 'none' }}
-        >
-          <Button variant="outline" size="sm" fullWidth>
-            💬 Text
-          </Button>
-        </Link>
+        {canText && (
+          <Link
+            to={`/app/messages?partnerId=${user.id}&partnerName=${encodeURIComponent(user.name)}&avatar=${encodeURIComponent(user.avatar)}`}
+            style={{ flex: 1, textDecoration: 'none' }}
+          >
+            <Button variant="outline" size="sm" fullWidth>
+              💬 Text
+            </Button>
+          </Link>
+        )}
         <Link to={`/user/${user.id}`} style={{ flex: 1, textDecoration: 'none' }}>
           <Button variant="outline" size="sm" fullWidth>
             View Profile

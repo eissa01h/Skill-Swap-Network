@@ -12,7 +12,9 @@ import { EmptyState } from '../../components/ui/Feedback/EmptyState';
 import { Spinner } from '../../components/ui/Feedback/Spinner';
 import { searchService } from '../../services/searchService';
 import { exchangeRequestService } from '../../services/exchangeRequestService';
+import { exchangeService } from '../../services/exchangeService';
 import { teachingSkillService } from '../../services/teachingSkillService';
+import { friendService } from '../../services/friendService';
 import { MOCK_SKILL_CATEGORIES } from '../../utils/mockData';
 
 export function FindPartnersPage() {
@@ -32,11 +34,15 @@ export function FindPartnersPage() {
   const [sentRequests, setSentRequests] = useState([]);
   const [cancellingId, setCancellingId] = useState(null);
 
+  // Friends & active swaps state
+  const [friends, setFriends] = useState([]);
+  const [activeExchanges, setActiveExchanges] = useState([]);
+
   useEffect(() => {
     async function fetchPartners() {
       setLoading(true);
       try {
-        const [results, mySkills, outgoing] = await Promise.all([
+        const [results, mySkills, outgoing, friendList, exchanges] = await Promise.all([
           searchService.searchPartners({
             query: searchTerm,
             category,
@@ -44,6 +50,8 @@ export function FindPartnersPage() {
           }),
           teachingSkillService.getTeachingSkills(),
           exchangeRequestService.getSentRequests(),
+          friendService.getFriends(),
+          exchangeService.getActiveExchanges(),
         ]);
         setPartners(results || []);
 
@@ -52,12 +60,28 @@ export function FindPartnersPage() {
           setSelectedOffer(mySkills[0].name);
         }
         setSentRequests(outgoing || []);
+        setFriends(friendList || []);
+        setActiveExchanges(exchanges || []);
       } finally {
         setLoading(false);
       }
     }
     fetchPartners();
   }, [searchTerm, category, minRating]);
+
+  const handleToggleFriend = async (partner) => {
+    const isCurrentlyFriend = friends.some(f =>
+      (partner.id && f.id === partner.id) ||
+      (partner.name && f.name?.toLowerCase() === partner.name?.toLowerCase())
+    );
+    if (isCurrentlyFriend) {
+      await friendService.removeFriend(partner.id || partner.name);
+    } else {
+      await friendService.addFriend(partner);
+    }
+    const updated = await friendService.getFriends();
+    setFriends(updated);
+  };
 
   const handleOpenProposal = (partner) => {
     setSelectedPartner(partner);
@@ -178,7 +202,13 @@ export function FindPartnersPage() {
           {partners.map(p => {
             const proposalStatus = getProposalStatus(p);
             const isPending = proposalStatus === 'PENDING';
-            const isAccepted = proposalStatus === 'ACCEPTED';
+            const isFriend = friends.some(f => (p.id && f.id === p.id) || (p.name && f.name?.toLowerCase() === p.name?.toLowerCase()));
+            const hasActiveSwap = activeExchanges.some(e =>
+              (p.id && (e.partner?.id === p.id || e.id === p.id)) ||
+              (p.name && e.partner?.name?.toLowerCase() === p.name?.toLowerCase())
+            );
+            const isAccepted = proposalStatus === 'ACCEPTED' || hasActiveSwap;
+            const canText = isAccepted || isFriend;
 
             return (
               <Card key={p.id} hoverable style={{ gap: 'var(--space-4)' }}>
@@ -198,6 +228,11 @@ export function FindPartnersPage() {
                   </div>
 
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
+                    {isFriend && (
+                      <span style={{ fontSize: '0.65rem', fontWeight: 700, padding: '0.2rem 0.5rem', borderRadius: 'var(--radius-full)', backgroundColor: '#fdf2f8', color: '#db2777', border: '1px solid #fbcfe8', textTransform: 'uppercase' }}>
+                        ⭐ Friend
+                      </span>
+                    )}
                     {p.mutualMatch && (
                       <span style={{ fontSize: '0.65rem', fontWeight: 700, padding: '0.2rem 0.5rem', borderRadius: 'var(--radius-full)', backgroundColor: 'var(--color-accent-100)', color: 'var(--color-accent-700)', textTransform: 'uppercase' }}>
                         ✨ Mutual Match
@@ -292,14 +327,31 @@ export function FindPartnersPage() {
                       Propose Swap
                     </Button>
                   )}
-                  <Link
-                    to={`/app/messages?partnerId=${p.id}&partnerName=${encodeURIComponent(p.name)}&avatar=${encodeURIComponent(p.avatar)}`}
-                    title={`Send text message to ${p.name}`}
+                  {canText && (
+                    <Link
+                      to={`/app/messages?partnerId=${p.id}&partnerName=${encodeURIComponent(p.name)}&avatar=${encodeURIComponent(p.avatar)}`}
+                      title={`Send text message to ${p.name}`}
+                    >
+                      <Button variant="outline" size="sm" style={{ whiteSpace: 'nowrap' }}>
+                        💬 Text
+                      </Button>
+                    </Link>
+                  )}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleToggleFriend(p)}
+                    title={isFriend ? 'Currently your friend (Click to remove)' : 'Add as friend to text & connect'}
+                    style={{
+                      borderColor: isFriend ? '#fbcfe8' : 'var(--border-subtle)',
+                      backgroundColor: isFriend ? '#fdf2f8' : 'transparent',
+                      color: isFriend ? '#db2777' : 'var(--text-secondary)',
+                      fontWeight: isFriend ? 600 : 400,
+                      whiteSpace: 'nowrap',
+                    }}
                   >
-                    <Button variant="outline" size="sm" style={{ whiteSpace: 'nowrap' }}>
-                      💬 Text
-                    </Button>
-                  </Link>
+                    {isFriend ? '⭐ Friend' : '+ Friend'}
+                  </Button>
                   <Link to={`/user/${p.id}`}>
                     <Button variant="outline" size="sm">
                       View Profile

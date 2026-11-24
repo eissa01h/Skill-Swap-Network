@@ -26,6 +26,7 @@ const STORAGE_KEYS = {
   REQUESTS_OUTGOING: 'ssn_requests_outgoing',
   LESSONS: 'ssn_lessons',
   MESSAGES: 'ssn_messages',
+  FRIENDS: 'ssn_friends',
   REVIEWS: 'ssn_reviews',
   NOTIFICATIONS: 'ssn_notifications',
   ADMIN_USERS: 'ssn_admin_users',
@@ -521,10 +522,134 @@ export const swapService = {
   },
 };
 
+export const MOCK_FRIENDS = [
+  {
+    id: 'usr_002',
+    name: 'Carlos Rodriguez',
+    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&auto=format&fit=crop&q=80',
+    title: 'Conversational Spanish (Native)',
+    status: 'Friend',
+  },
+  {
+    id: 'usr_003',
+    name: 'Elena Rostova',
+    avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=200&auto=format&fit=crop&q=80',
+    title: 'Classical Piano & Music Theory',
+    status: 'Friend',
+  },
+];
+
 // -------------------------------------------------------------
 // 5. Messaging Service
 // -------------------------------------------------------------
 export const messageService = {
+  async canMessagePartner(partnerId, partnerName) {
+    if (!partnerId && !partnerName) return false;
+
+    // 1. Check if they are in friends list
+    const friends = getStored(STORAGE_KEYS.FRIENDS, MOCK_FRIENDS);
+    const isFriend = friends.some(f =>
+      (partnerId && (f.id === partnerId || f.id === `usr_${partnerId}`)) ||
+      (partnerName && f.name.toLowerCase() === partnerName.toLowerCase())
+    );
+    if (isFriend) return true;
+
+    // 2. Check active exchanges
+    const exchanges = getStored(STORAGE_KEYS.EXCHANGES, MOCK_ACTIVE_EXCHANGES);
+    const isExchangePartner = exchanges.some(e =>
+      (partnerId && (e.partner?.id === partnerId || e.id === partnerId)) ||
+      (partnerName && e.partner?.name?.toLowerCase() === partnerName.toLowerCase())
+    );
+    if (isExchangePartner) return true;
+
+    // 3. Check accepted outgoing swap requests
+    const outgoing = getStored(STORAGE_KEYS.REQUESTS_OUTGOING, MOCK_EXCHANGE_REQUESTS.outgoing);
+    const isAcceptedOutgoing = outgoing.some(r =>
+      r.status === 'ACCEPTED' && (
+        (partnerId && (r.recipient?.id === partnerId || r.partner?.id === partnerId)) ||
+        (partnerName && (r.recipient?.name?.toLowerCase() === partnerName.toLowerCase() || r.partner?.name?.toLowerCase() === partnerName.toLowerCase()))
+      )
+    );
+    if (isAcceptedOutgoing) return true;
+
+    // 4. Check accepted incoming swap requests
+    const incoming = getStored(STORAGE_KEYS.REQUESTS_INCOMING, MOCK_EXCHANGE_REQUESTS.incoming);
+    const isAcceptedIncoming = incoming.some(r =>
+      r.status === 'ACCEPTED' && (
+        (partnerId && (r.sender?.id === partnerId || r.partner?.id === partnerId)) ||
+        (partnerName && (r.sender?.name?.toLowerCase() === partnerName.toLowerCase() || r.partner?.name?.toLowerCase() === partnerName.toLowerCase()))
+      )
+    );
+    return isAcceptedIncoming;
+  },
+
+  async getEligibleChatPartners() {
+    const friends = getStored(STORAGE_KEYS.FRIENDS, MOCK_FRIENDS);
+    const exchanges = getStored(STORAGE_KEYS.EXCHANGES, MOCK_ACTIVE_EXCHANGES);
+    const outgoing = getStored(STORAGE_KEYS.REQUESTS_OUTGOING, MOCK_EXCHANGE_REQUESTS.outgoing);
+    const incoming = getStored(STORAGE_KEYS.REQUESTS_INCOMING, MOCK_EXCHANGE_REQUESTS.incoming);
+
+    const eligibleMap = new Map();
+
+    // Friends
+    friends.forEach(f => {
+      const key = f.id || f.name.toLowerCase();
+      eligibleMap.set(key, {
+        id: f.id,
+        name: f.name,
+        avatar: f.avatar,
+        title: f.title || 'Friend',
+        relationship: 'Friend',
+      });
+    });
+
+    // Active exchange partners
+    exchanges.forEach(e => {
+      if (e.partner) {
+        const key = e.partner.id || e.partner.name.toLowerCase();
+        eligibleMap.set(key, {
+          id: e.partner.id,
+          name: e.partner.name,
+          avatar: e.partner.avatar,
+          title: `Active Swap (${e.skillYouLearn || 'Skill Exchange'})`,
+          relationship: 'Accepted Swap Partner',
+        });
+      }
+    });
+
+    // Accepted outgoing
+    outgoing.filter(r => r.status === 'ACCEPTED').forEach(r => {
+      const p = r.recipient || r.partner;
+      if (p) {
+        const key = p.id || p.name.toLowerCase();
+        eligibleMap.set(key, {
+          id: p.id,
+          name: p.name,
+          avatar: p.avatar,
+          title: `Accepted Swap (${r.youWant || 'Swap'})`,
+          relationship: 'Accepted Swap Partner',
+        });
+      }
+    });
+
+    // Accepted incoming
+    incoming.filter(r => r.status === 'ACCEPTED').forEach(r => {
+      const p = r.sender || r.partner;
+      if (p) {
+        const key = p.id || p.name.toLowerCase();
+        eligibleMap.set(key, {
+          id: p.id,
+          name: p.name,
+          avatar: p.avatar,
+          title: `Accepted Swap (${r.theyOffer || 'Swap'})`,
+          relationship: 'Accepted Swap Partner',
+        });
+      }
+    });
+
+    return Array.from(eligibleMap.values());
+  },
+
   async getConversations() {
     const list = getStored(STORAGE_KEYS.MESSAGES, MOCK_MESSAGES);
     const currentUser = getStored(STORAGE_KEYS.USER, null);
@@ -545,6 +670,10 @@ export const messageService = {
 
   async sendMessage(partnerId, text, partnerInfo = null) {
     if (!text.trim()) return null;
+    const canMessage = await this.canMessagePartner(partnerId, partnerInfo?.name);
+    if (!canMessage) {
+      throw new Error('Direct messaging is only permitted with accepted swap partners and friends.');
+    }
     const conversations = getStored(STORAGE_KEYS.MESSAGES, MOCK_MESSAGES);
     const currentUser = getStored(STORAGE_KEYS.USER, null);
     const senderName = currentUser?.fullName?.split(' ')[0] || currentUser?.name?.split(' ')[0] || 'You';
@@ -622,6 +751,52 @@ export const messageService = {
     });
     setStored(STORAGE_KEYS.MESSAGES, updated);
     return true;
+  },
+};
+
+// -------------------------------------------------------------
+// 5.1 Friends Service
+// -------------------------------------------------------------
+export const friendService = {
+  async getFriends() {
+    return getStored(STORAGE_KEYS.FRIENDS, MOCK_FRIENDS);
+  },
+
+  async addFriend(partner) {
+    if (!partner) return false;
+    const friends = getStored(STORAGE_KEYS.FRIENDS, MOCK_FRIENDS);
+    const partnerId = partner.id;
+    const partnerName = partner.name || partner.fullName;
+    const exists = friends.some(f =>
+      (partnerId && f.id === partnerId) ||
+      (partnerName && f.name.toLowerCase() === partnerName.toLowerCase())
+    );
+    if (!exists) {
+      const newFriend = {
+        id: partnerId || `fr_${Date.now()}`,
+        name: partnerName || 'Community Member',
+        avatar: partner.avatar || partner.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&auto=format&fit=crop&q=80',
+        title: partner.title || partner.teaches || 'Community Friend',
+        status: 'Friend',
+      };
+      setStored(STORAGE_KEYS.FRIENDS, [newFriend, ...friends]);
+    }
+    return true;
+  },
+
+  async removeFriend(partnerId) {
+    const friends = getStored(STORAGE_KEYS.FRIENDS, MOCK_FRIENDS);
+    const updated = friends.filter(f => f.id !== partnerId && f.name !== partnerId);
+    setStored(STORAGE_KEYS.FRIENDS, updated);
+    return true;
+  },
+
+  async isFriend(partnerId, partnerName = '') {
+    const friends = getStored(STORAGE_KEYS.FRIENDS, MOCK_FRIENDS);
+    return friends.some(f =>
+      (partnerId && f.id === partnerId) ||
+      (partnerName && f.name.toLowerCase() === partnerName.toLowerCase())
+    );
   },
 };
 
