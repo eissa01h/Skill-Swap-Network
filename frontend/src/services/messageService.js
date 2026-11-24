@@ -26,12 +26,12 @@ export const messageService = {
     }
   },
 
-  async sendMessage(conversationId, content) {
+  async sendMessage(conversationId, content, partnerInfo = null) {
     try {
       return await apiClient.post(`/conversations/${conversationId}/messages`, { content });
     } catch (err) {
       if (isBackendUnavailable(err)) {
-        return await mockMessages.sendMessage(conversationId, content);
+        return await mockMessages.sendMessage(conversationId, content, partnerInfo);
       }
       throw err;
     }

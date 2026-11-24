@@ -104,11 +104,31 @@ export function PublicProfilePage() {
                 </div>
               </div>
 
-              <Link to="/app/find-partners">
-                <Button variant="primary" size="md" fullWidth>
-                  Propose Skill Swap
-                </Button>
-              </Link>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)', width: '100%' }}>
+                <Link
+                  to={`/app/messages?partnerId=${profile?.id}&partnerName=${encodeURIComponent(profile?.name || profile?.fullName || 'Partner')}&avatar=${encodeURIComponent(profile?.avatar || profile?.avatarUrl || '')}`}
+                  style={{ textDecoration: 'none' }}
+                >
+                  <Button
+                    variant="primary"
+                    size="md"
+                    fullWidth
+                    style={{
+                      background: 'linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)',
+                      color: '#fff',
+                      border: 'none',
+                      fontWeight: 600,
+                    }}
+                  >
+                    💬 Direct Message & Text
+                  </Button>
+                </Link>
+                <Link to="/app/find-partners" style={{ textDecoration: 'none' }}>
+                  <Button variant="outline" size="md" fullWidth>
+                    Propose Skill Swap
+                  </Button>
+                </Link>
+              </div>
             </div>
           </Card>
 

@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import './Card.css';
 import { Button } from '../Button/Button';
 import { SkillTag } from '../SkillTag/SkillTag';
@@ -121,6 +122,22 @@ export function MatchCard({
           Request Skill Swap
         </Button>
       )}
+
+      <div style={{ display: 'flex', gap: 'var(--space-2)', marginTop: 'var(--space-2)' }}>
+        <Link
+          to={`/app/messages?partnerId=${user.id}&partnerName=${encodeURIComponent(user.name)}&avatar=${encodeURIComponent(user.avatar)}`}
+          style={{ flex: 1, textDecoration: 'none' }}
+        >
+          <Button variant="outline" size="sm" fullWidth>
+            💬 Text
+          </Button>
+        </Link>
+        <Link to={`/user/${user.id}`} style={{ flex: 1, textDecoration: 'none' }}>
+          <Button variant="outline" size="sm" fullWidth>
+            View Profile
+          </Button>
+        </Link>
+      </div>
     </div>
   );
 }

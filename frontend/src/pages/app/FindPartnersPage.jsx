@@ -292,6 +292,14 @@ export function FindPartnersPage() {
                       Propose Swap
                     </Button>
                   )}
+                  <Link
+                    to={`/app/messages?partnerId=${p.id}&partnerName=${encodeURIComponent(p.name)}&avatar=${encodeURIComponent(p.avatar)}`}
+                    title={`Send text message to ${p.name}`}
+                  >
+                    <Button variant="outline" size="sm" style={{ whiteSpace: 'nowrap' }}>
+                      💬 Text
+                    </Button>
+                  </Link>
                   <Link to={`/user/${p.id}`}>
                     <Button variant="outline" size="sm">
                       View Profile

@@ -543,7 +543,7 @@ export const messageService = {
     }));
   },
 
-  async sendMessage(partnerId, text) {
+  async sendMessage(partnerId, text, partnerInfo = null) {
     if (!text.trim()) return null;
     const conversations = getStored(STORAGE_KEYS.MESSAGES, MOCK_MESSAGES);
     const currentUser = getStored(STORAGE_KEYS.USER, null);
@@ -557,15 +557,31 @@ export const messageService = {
       isSelf: true,
     };
 
+    let found = false;
     const updated = conversations.map(c => {
-      if (c.partner.id === partnerId) {
+      if (c.partner?.id === partnerId || c.id === partnerId) {
+        found = true;
         return {
           ...c,
-          thread: [...c.thread, newMsg],
+          thread: [...(c.thread || []), newMsg],
         };
       }
       return c;
     });
+
+    if (!found) {
+      const newConv = {
+        id: `msg_${Date.now()}`,
+        partner: partnerInfo || {
+          id: partnerId,
+          name: 'Community Member',
+          avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&auto=format&fit=crop&q=80',
+          status: 'Online',
+        },
+        thread: [newMsg],
+      };
+      updated.unshift(newConv);
+    }
 
     setStored(STORAGE_KEYS.MESSAGES, updated);
     return newMsg;

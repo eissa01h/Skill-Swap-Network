@@ -1,17 +1,29 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { AppLayout } from '../../layouts/AppLayout';
 import { Button } from '../../components/ui/Button/Button';
 import { Modal } from '../../components/ui/Modal/Modal';
 import { EmptyState } from '../../components/ui/Feedback/EmptyState';
 import { Spinner } from '../../components/ui/Feedback/Spinner';
 import { messageService } from '../../services/messageService';
+import { searchService } from '../../services/searchService';
 
 export function MessagesPage() {
+  const [searchParams] = useSearchParams();
+  const queryPartnerId = searchParams.get('partnerId');
+  const queryPartnerName = searchParams.get('partnerName');
+  const queryPartnerAvatar = searchParams.get('avatar');
+
   const [conversations, setConversations] = useState([]);
   const [activePartnerId, setActivePartnerId] = useState(null);
   const [inputText, setInputText] = useState('');
   const [loading, setLoading] = useState(true);
+
+  // New Chat modal state
+  const [showNewChatModal, setShowNewChatModal] = useState(false);
+  const [availablePartners, setAvailablePartners] = useState([]);
+  const [partnerSearchQuery, setPartnerSearchQuery] = useState('');
+  const [loadingPartners, setLoadingPartners] = useState(false);
 
   // Deletion modal state
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -22,24 +34,76 @@ export function MessagesPage() {
     async function load() {
       try {
         const data = await messageService.getConversations();
-        setConversations(data || []);
-        if (data && data.length > 0) {
-          setActivePartnerId(data[0].partner.id);
+        let convs = data || [];
+
+        if (queryPartnerId) {
+          const existing = convs.find(c => c.partner?.id === queryPartnerId || c.id === queryPartnerId);
+          if (existing) {
+            setActivePartnerId(existing.partner.id);
+          } else {
+            const newThread = {
+              id: `conv_${queryPartnerId}`,
+              partner: {
+                id: queryPartnerId,
+                name: queryPartnerName || 'Community Partner',
+                avatar: queryPartnerAvatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&auto=format&fit=crop&q=80',
+                status: 'Online',
+              },
+              thread: [],
+            };
+            convs = [newThread, ...convs];
+            setActivePartnerId(queryPartnerId);
+          }
+        } else if (convs.length > 0) {
+          setActivePartnerId(convs[0].partner.id);
         }
+        setConversations(convs);
       } finally {
         setLoading(false);
       }
     }
     load();
-  }, []);
+  }, [queryPartnerId, queryPartnerName, queryPartnerAvatar]);
 
   const activeConv = conversations.find(c => c.partner.id === activePartnerId) || conversations[0];
+
+  const handleOpenNewChat = async () => {
+    setShowNewChatModal(true);
+    setLoadingPartners(true);
+    try {
+      const list = await searchService.searchPartners({});
+      setAvailablePartners(list || []);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingPartners(false);
+    }
+  };
+
+  const handleSelectNewChatPartner = (partner) => {
+    const existing = conversations.find(c => c.partner?.id === partner.id);
+    if (!existing) {
+      const newConv = {
+        id: `conv_${partner.id}`,
+        partner: {
+          id: partner.id,
+          name: partner.name,
+          avatar: partner.avatar,
+          status: 'Online',
+        },
+        thread: [],
+      };
+      setConversations([newConv, ...conversations]);
+    }
+    setActivePartnerId(partner.id);
+    setShowNewChatModal(false);
+  };
 
   const handleSend = async (e) => {
     e.preventDefault();
     if (!inputText.trim() || !activePartnerId) return;
 
-    await messageService.sendMessage(activePartnerId, inputText);
+    await messageService.sendMessage(activePartnerId, inputText, activeConv?.partner);
     const updated = await messageService.getConversations();
     setConversations(updated);
     setInputText('');
@@ -96,17 +160,33 @@ export function MessagesPage() {
         <EmptyState
           icon="💬"
           title="No Active Discussions"
-          description="You don't have any open direct messages yet. Connect with a partner to start learning together!"
-          actionLabel="Find Partners"
-          onAction={() => window.location.href = '/app/find-partners'}
+          description="You don't have any open direct messages yet. Connect with a partner or start a new chat to begin learning together!"
+          actionLabel="✏️ Start a Chat"
+          onAction={handleOpenNewChat}
         />
       ) : (
         <div className="card-surface" style={{ display: 'grid', gridTemplateColumns: '320px 1fr', height: '640px', overflow: 'hidden' }}>
           {/* Left Column: Conversation List */}
           <div style={{ borderRight: '1px solid var(--border-subtle)', display: 'flex', flexDirection: 'column' }}>
-            <div style={{ padding: 'var(--space-4)', borderBottom: '1px solid var(--border-subtle)', fontWeight: 700, fontSize: 'var(--font-size-sm)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span>Active Conversations</span>
-              <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)' }}>{conversations.length} partners</span>
+            <div style={{ padding: 'var(--space-3) var(--space-4)', borderBottom: '1px solid var(--border-subtle)', fontWeight: 700, fontSize: 'var(--font-size-sm)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <span>Conversations</span>
+                <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)', marginLeft: '6px' }}>({conversations.length})</span>
+              </div>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={handleOpenNewChat}
+                style={{
+                  padding: '4px 10px',
+                  fontSize: 'var(--font-size-xs)',
+                  background: 'linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)',
+                  border: 'none',
+                  fontWeight: 600,
+                }}
+              >
+                ✏️ New Chat
+              </Button>
             </div>
 
             <div style={{ overflowY: 'auto', flex: 1 }}>
@@ -420,6 +500,87 @@ export function MessagesPage() {
             </div>
           </div>
         )}
+      </Modal>
+
+      {/* New Chat Modal */}
+      <Modal
+        isOpen={showNewChatModal}
+        onClose={() => setShowNewChatModal(false)}
+        title="Start a Direct Chat"
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+          <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-secondary)' }}>
+            Choose any community partner to message and coordinate skill exchanges directly:
+          </p>
+
+          <input
+            type="text"
+            placeholder="Search partners by name or skill..."
+            value={partnerSearchQuery}
+            onChange={(e) => setPartnerSearchQuery(e.target.value)}
+            style={{
+              width: '100%',
+              padding: '8px 12px',
+              borderRadius: 'var(--radius-md)',
+              border: '1px solid var(--border-subtle)',
+              fontSize: 'var(--font-size-sm)',
+            }}
+          />
+
+          <div style={{ maxHeight: '280px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+            {loadingPartners ? (
+              <div style={{ padding: 'var(--space-4)', textAlign: 'center' }}>
+                <Spinner size="sm" message="Loading community members..." />
+              </div>
+            ) : availablePartners.length === 0 ? (
+              <div style={{ padding: 'var(--space-4)', textAlign: 'center', color: 'var(--text-muted)', fontSize: 'var(--font-size-sm)' }}>
+                No partners found.
+              </div>
+            ) : (
+              availablePartners
+                .filter(p => !partnerSearchQuery.trim() || p.name.toLowerCase().includes(partnerSearchQuery.toLowerCase()) || (p.teaches && p.teaches.toLowerCase().includes(partnerSearchQuery.toLowerCase())))
+                .map(partner => (
+                  <div
+                    key={partner.id}
+                    onClick={() => handleSelectNewChatPartner(partner)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 'var(--space-3)',
+                      padding: 'var(--space-3)',
+                      borderRadius: 'var(--radius-md)',
+                      cursor: 'pointer',
+                      border: '1px solid var(--border-subtle)',
+                      transition: 'background var(--transition-fast)',
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--color-primary-50)'}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                  >
+                    <img
+                      src={partner.avatar}
+                      alt={partner.name}
+                      style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }}
+                    />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontWeight: 600, fontSize: 'var(--font-size-sm)' }}>{partner.name}</div>
+                      <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        Teaches: {partner.teaches || 'Skill Swapper'}
+                      </div>
+                    </div>
+                    <Button variant="outline" size="sm" style={{ pointerEvents: 'none' }}>
+                      💬 Chat
+                    </Button>
+                  </div>
+                ))
+            )}
+          </div>
+
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 'var(--space-2)' }}>
+            <Button variant="outline" size="sm" onClick={() => setShowNewChatModal(false)}>
+              Close
+            </Button>
+          </div>
+        </div>
       </Modal>
     </AppLayout>
   );
