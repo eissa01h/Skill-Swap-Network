@@ -1,10 +1,38 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../../hooks/useAuth';
+import { exchangeRequestService } from '../../../services/exchangeRequestService';
+import { matchingService } from '../../../services/matchingService';
 import './Sidebar.css';
 
 export function Sidebar({ isAdmin = false }) {
   const { user, isAdmin: isAdminUser } = useAuth();
+  const [pendingRequestsCount, setPendingRequestsCount] = useState(0);
+  const [matchesCount, setMatchesCount] = useState(0);
+
+  const updateCounts = async () => {
+    try {
+      const incoming = await exchangeRequestService.getReceivedRequests();
+      const pending = (incoming || []).filter(r => r.status === 'PENDING').length;
+      setPendingRequestsCount(pending);
+
+      const matches = await matchingService.getRecommendedMatches();
+      setMatchesCount((matches || []).length);
+    } catch {
+      // fallback
+    }
+  };
+
+  useEffect(() => {
+    updateCounts();
+    const handleUpdate = () => updateCounts();
+    window.addEventListener('ssn_requests_updated', handleUpdate);
+    window.addEventListener('storage', handleUpdate);
+    return () => {
+      window.removeEventListener('ssn_requests_updated', handleUpdate);
+      window.removeEventListener('storage', handleUpdate);
+    };
+  }, []);
 
   if (isAdmin) {
     return (
@@ -66,7 +94,7 @@ export function Sidebar({ isAdmin = false }) {
           <NavLink to="/app/matches" className={({ isActive }) => `sidebar-nav-item ${isActive ? 'active' : ''}`}>
             <span className="sidebar-icon">✨</span>
             <span>Recommended Matches</span>
-            <span className="sidebar-badge">3</span>
+            {matchesCount > 0 && <span className="sidebar-badge">{matchesCount}</span>}
           </NavLink>
         </li>
         <li>
@@ -99,7 +127,7 @@ export function Sidebar({ isAdmin = false }) {
           <NavLink to="/app/requests" className={({ isActive }) => `sidebar-nav-item ${isActive ? 'active' : ''}`}>
             <span className="sidebar-icon">📩</span>
             <span>Exchange Requests</span>
-            <span className="sidebar-badge">2</span>
+            {pendingRequestsCount > 0 && <span className="sidebar-badge">{pendingRequestsCount}</span>}
           </NavLink>
         </li>
         <li>

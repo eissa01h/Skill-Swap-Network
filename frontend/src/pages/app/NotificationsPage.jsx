@@ -6,14 +6,37 @@ import { Button } from '../../components/ui/Button/Button';
 import { MOCK_NOTIFICATIONS } from '../../utils/mockData';
 
 export function NotificationsPage() {
-  const [notifications, setNotifications] = useState(MOCK_NOTIFICATIONS);
+  const getStoredNotifications = () => {
+    try {
+      const stored = localStorage.getItem('ssn_notifications');
+      return stored ? JSON.parse(stored) : MOCK_NOTIFICATIONS;
+    } catch {
+      return MOCK_NOTIFICATIONS;
+    }
+  };
+
+  const [notifications, setNotifications] = useState(getStoredNotifications);
 
   const markAllRead = () => {
-    setNotifications(notifications.map(n => ({ ...n, isRead: true })));
+    const updated = notifications.map(n => ({ ...n, isRead: true }));
+    setNotifications(updated);
+    try {
+      localStorage.setItem('ssn_notifications', JSON.stringify(updated));
+      window.dispatchEvent(new Event('ssn_notifications_updated'));
+    } catch {
+      // ignore
+    }
   };
 
   const markOneRead = (id) => {
-    setNotifications(notifications.map(n => n.id === id ? { ...n, isRead: true } : n));
+    const updated = notifications.map(n => n.id === id ? { ...n, isRead: true } : n);
+    setNotifications(updated);
+    try {
+      localStorage.setItem('ssn_notifications', JSON.stringify(updated));
+      window.dispatchEvent(new Event('ssn_notifications_updated'));
+    } catch {
+      // ignore
+    }
   };
 
   return (

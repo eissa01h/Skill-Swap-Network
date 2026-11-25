@@ -42,6 +42,10 @@ export function ExchangeRequestsPage() {
     if (selectedDetail?.id === id) {
       setSelectedDetail(null);
     }
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('ssn_requests_updated'));
+      window.dispatchEvent(new Event('ssn_notifications_updated'));
+    }
   };
 
   const handleDecline = async (id) => {
@@ -49,6 +53,10 @@ export function ExchangeRequestsPage() {
     await loadRequests();
     if (selectedDetail?.id === id) {
       setSelectedDetail(null);
+    }
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('ssn_requests_updated'));
+      window.dispatchEvent(new Event('ssn_notifications_updated'));
     }
   };
 
@@ -58,7 +66,12 @@ export function ExchangeRequestsPage() {
     if (selectedDetail?.id === id) {
       setSelectedDetail(null);
     }
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('ssn_requests_updated'));
+    }
   };
+
+  const pendingIncomingCount = incoming.filter(r => r.status === 'PENDING').length;
 
   return (
     <AppLayout
@@ -80,7 +93,7 @@ export function ExchangeRequestsPage() {
             cursor: 'pointer',
           }}
         >
-          Incoming Proposals ({incoming.length})
+          Incoming Proposals ({pendingIncomingCount})
         </button>
         <button
           type="button"

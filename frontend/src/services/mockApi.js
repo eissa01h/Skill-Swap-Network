@@ -463,6 +463,9 @@ export const swapService = {
     };
     const updated = [newProposal, ...outgoing];
     setStored(STORAGE_KEYS.REQUESTS_OUTGOING, updated);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('ssn_requests_updated'));
+    }
     return newProposal;
   },
 
@@ -493,13 +496,52 @@ export const swapService = {
       notes: `Agreement initiated via swap request on ${new Date().toLocaleDateString()}`,
     };
     setStored(STORAGE_KEYS.EXCHANGES, [newExchange, ...exchanges]);
+
+    try {
+      const notifications = getStored(STORAGE_KEYS.NOTIFICATIONS, MOCK_NOTIFICATIONS);
+      const senderName = target?.sender?.name;
+      const updatedNotifs = notifications.map(n => {
+        if (n.type === 'SWAP_REQUEST' && (!senderName || n.message?.includes(senderName) || n.link === '/app/requests')) {
+          return { ...n, isRead: true };
+        }
+        return n;
+      });
+      setStored(STORAGE_KEYS.NOTIFICATIONS, updatedNotifs);
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('ssn_notifications_updated'));
+        window.dispatchEvent(new Event('ssn_requests_updated'));
+      }
+    } catch {
+      // storage safeguard
+    }
+
     return true;
   },
 
   async declineRequest(requestId) {
     const incoming = getStored(STORAGE_KEYS.REQUESTS_INCOMING, MOCK_EXCHANGE_REQUESTS.incoming);
+    const target = incoming.find(r => r.id === requestId);
     const updatedIncoming = incoming.map(r => r.id === requestId ? { ...r, status: 'DECLINED' } : r);
     setStored(STORAGE_KEYS.REQUESTS_INCOMING, updatedIncoming);
+
+    try {
+      const notifications = getStored(STORAGE_KEYS.NOTIFICATIONS, MOCK_NOTIFICATIONS);
+      const senderName = target?.sender?.name;
+      const updatedNotifs = notifications.map(n => {
+        if (n.type === 'SWAP_REQUEST' && (!senderName || n.message?.includes(senderName) || n.link === '/app/requests')) {
+          return { ...n, isRead: true };
+        }
+        return n;
+      });
+      setStored(STORAGE_KEYS.NOTIFICATIONS, updatedNotifs);
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('ssn_notifications_updated'));
+        window.dispatchEvent(new Event('ssn_requests_updated'));
+      }
+    } catch {
+      // storage safeguard
+    }
+
     return true;
   },
 
@@ -507,6 +549,9 @@ export const swapService = {
     const outgoing = getStored(STORAGE_KEYS.REQUESTS_OUTGOING, MOCK_EXCHANGE_REQUESTS.outgoing);
     const updatedOutgoing = outgoing.map(r => r.id === requestId ? { ...r, status: 'CANCELLED' } : r);
     setStored(STORAGE_KEYS.REQUESTS_OUTGOING, updatedOutgoing);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('ssn_requests_updated'));
+    }
     return true;
   },
 

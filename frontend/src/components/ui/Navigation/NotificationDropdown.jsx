@@ -5,10 +5,33 @@ import './NotificationDropdown.css';
 
 export function NotificationDropdown() {
   const [isOpen, setIsOpen] = useState(false);
-  const [notifications, setNotifications] = useState(MOCK_NOTIFICATIONS);
+  const getStoredNotifications = () => {
+    try {
+      const stored = localStorage.getItem('ssn_notifications');
+      return stored ? JSON.parse(stored) : MOCK_NOTIFICATIONS;
+    } catch {
+      return MOCK_NOTIFICATIONS;
+    }
+  };
+
+  const [notifications, setNotifications] = useState(getStoredNotifications);
   const dropdownRef = useRef(null);
 
   const unreadCount = notifications.filter(n => !n.isRead).length;
+
+  useEffect(() => {
+    const handleUpdate = () => {
+      setNotifications(getStoredNotifications());
+    };
+    window.addEventListener('ssn_notifications_updated', handleUpdate);
+    window.addEventListener('ssn_requests_updated', handleUpdate);
+    window.addEventListener('storage', handleUpdate);
+    return () => {
+      window.removeEventListener('ssn_notifications_updated', handleUpdate);
+      window.removeEventListener('ssn_requests_updated', handleUpdate);
+      window.removeEventListener('storage', handleUpdate);
+    };
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -21,7 +44,14 @@ export function NotificationDropdown() {
   }, []);
 
   const markAllAsRead = () => {
-    setNotifications(notifications.map(n => ({ ...n, isRead: true })));
+    const updated = notifications.map(n => ({ ...n, isRead: true }));
+    setNotifications(updated);
+    try {
+      localStorage.setItem('ssn_notifications', JSON.stringify(updated));
+      window.dispatchEvent(new Event('ssn_notifications_updated'));
+    } catch {
+      // ignore
+    }
   };
 
   return (
