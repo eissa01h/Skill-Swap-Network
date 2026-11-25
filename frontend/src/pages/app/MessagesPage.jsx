@@ -45,22 +45,39 @@ export function MessagesPage() {
               name: queryPartnerName || 'this member',
             });
           } else {
-            const existing = convs.find(c => c.partner?.id === queryPartnerId || c.id === queryPartnerId);
+            const existing = convs.find(c => c.partner?.id === queryPartnerId || c.id === queryPartnerId || (queryPartnerName && c.partner?.name?.toLowerCase() === queryPartnerName.toLowerCase()));
             if (existing) {
-              setActivePartnerId(existing.partner.id);
+              setActivePartnerId(existing.partner?.id || existing.id);
             } else {
               const newThread = {
                 id: `conv_${queryPartnerId}`,
                 partner: {
                   id: queryPartnerId,
                   name: queryPartnerName || 'Community Partner',
-                  avatar: queryPartnerAvatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&auto=format&fit=crop&q=80',
+                  avatar: queryPartnerAvatar || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&auto=format&fit=crop&q=80',
                   status: 'Online',
                 },
-                thread: [],
+                thread: [
+                  {
+                    id: `t_${Date.now()}_0`,
+                    sender: queryPartnerName ? queryPartnerName.split(' ')[0] : 'Partner',
+                    text: 'Hi! I accepted your swap proposal. Looking forward to practicing and exchanging skills together!',
+                    time: 'Yesterday',
+                    isSelf: false,
+                  },
+                ],
               };
               convs = [newThread, ...convs];
               setActivePartnerId(queryPartnerId);
+
+              try {
+                const storedConvs = JSON.parse(localStorage.getItem('ssn_messages') || '[]');
+                if (!storedConvs.some(c => c.partner?.id === queryPartnerId || c.id === queryPartnerId)) {
+                  localStorage.setItem('ssn_messages', JSON.stringify([newThread, ...(storedConvs.length > 0 ? storedConvs : (data || []))]));
+                }
+              } catch {
+                // storage safeguard
+              }
             }
           }
         } else if (convs.length > 0) {
@@ -74,7 +91,7 @@ export function MessagesPage() {
     load();
   }, [queryPartnerId, queryPartnerName, queryPartnerAvatar]);
 
-  const activeConv = conversations.find(c => c.partner.id === activePartnerId) || conversations[0];
+  const activeConv = conversations.find(c => c.partner?.id === activePartnerId || c.id === activePartnerId) || conversations[0];
 
   const handleOpenNewChat = async () => {
     setShowNewChatModal(true);

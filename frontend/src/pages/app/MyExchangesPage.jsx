@@ -97,7 +97,9 @@ export function MyExchangesPage() {
                 </div>
 
                 <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)', marginTop: 'var(--space-4)', flexWrap: 'wrap' }}>
-                  <Link to="/app/messages">
+                  <Link
+                    to={`/app/messages?partnerId=${encodeURIComponent(exc.partner?.id || '')}&partnerName=${encodeURIComponent(exc.partner?.name || 'Partner')}&avatar=${encodeURIComponent(exc.partner?.avatar || '')}`}
+                  >
                     <Button variant="outline" size="sm">💬 Chat Partner</Button>
                   </Link>
                   <Link to="/app/schedule">

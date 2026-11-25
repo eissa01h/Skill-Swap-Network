@@ -171,7 +171,9 @@ export function ExchangeRequestsPage() {
                       </Button>
                     </div>
                   ) : req.status === 'ACCEPTED' ? (
-                    <Link to="/app/messages">
+                    <Link
+                      to={`/app/messages?partnerId=${encodeURIComponent(req.sender?.id || req.partner?.id || req.id)}&partnerName=${encodeURIComponent(req.sender?.name || req.partner?.name || 'Partner')}&avatar=${encodeURIComponent(req.sender?.avatar || req.partner?.avatar || '')}`}
+                    >
                       <Button variant="primary" size="sm">Chat & Schedule Session</Button>
                     </Link>
                   ) : null}
@@ -224,7 +226,9 @@ export function ExchangeRequestsPage() {
                     </Button>
                   )}
                   {req.status === 'ACCEPTED' && (
-                    <Link to="/app/messages">
+                    <Link
+                      to={`/app/messages?partnerId=${encodeURIComponent(req.recipient?.id || req.partner?.id || req.id)}&partnerName=${encodeURIComponent(req.recipient?.name || req.partner?.name || 'Partner')}&avatar=${encodeURIComponent(req.recipient?.avatar || req.partner?.avatar || '')}`}
+                    >
                       <Button variant="primary" size="sm">Open Discussion</Button>
                     </Link>
                   )}
@@ -276,6 +280,13 @@ export function ExchangeRequestsPage() {
                 <Button variant="danger" size="sm" onClick={() => handleCancel(selectedDetail.id)}>
                   Cancel Request
                 </Button>
+              )}
+              {selectedDetail.status === 'ACCEPTED' && (
+                <Link
+                  to={`/app/messages?partnerId=${encodeURIComponent(selectedDetail.recipient?.id || selectedDetail.sender?.id || selectedDetail.partner?.id || selectedDetail.id)}&partnerName=${encodeURIComponent(selectedDetail.recipient?.name || selectedDetail.sender?.name || selectedDetail.partner?.name || 'Partner')}&avatar=${encodeURIComponent(selectedDetail.recipient?.avatar || selectedDetail.sender?.avatar || selectedDetail.partner?.avatar || '')}`}
+                >
+                  <Button variant="primary" size="sm">Open Discussion</Button>
+                </Link>
               )}
               <Button variant="outline" size="sm" onClick={() => setSelectedDetail(null)}>
                 Close
