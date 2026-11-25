@@ -8,8 +8,10 @@ import { Textarea } from '../../components/ui/Input/Textarea';
 import { Spinner } from '../../components/ui/Feedback/Spinner';
 import { EmptyState } from '../../components/ui/Feedback/EmptyState';
 import { feedbackService } from '../../services/feedbackService';
+import { useAuth } from '../../hooks/useAuth';
 
 export function FeedbackPage() {
+  const { user } = useAuth();
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -122,34 +124,51 @@ export function FeedbackPage() {
         />
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 'var(--space-6)' }}>
-          {reviews.map(rev => (
-            <Card key={rev.id}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', marginBottom: 'var(--space-3)' }}>
-                <img
-                  src={rev.authorAvatar || 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&auto=format&fit=crop&q=80'}
-                  alt={rev.authorName}
-                  style={{ width: '44px', height: '44px', borderRadius: '50%', objectFit: 'cover' }}
-                />
-                <div style={{ flex: 1 }}>
-                  <h4 style={{ fontSize: 'var(--font-size-sm)', fontWeight: 700 }}>{rev.authorName}</h4>
-                  <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-primary-600)', fontWeight: 600 }}>
-                    Skill: {rev.skillTaught}
+          {reviews.map(rev => {
+            const isCurrentUser = user && (
+              rev.isSelf ||
+              rev.authorName === user.fullName ||
+              rev.authorName === user.name ||
+              rev.authorName === user.fullName?.split(' ')[0] ||
+              rev.authorName?.toLowerCase() === user.fullName?.toLowerCase() ||
+              rev.authorName?.toLowerCase() === user.name?.toLowerCase() ||
+              (user.email && rev.authorName?.toLowerCase() === user.email.split('@')[0].toLowerCase())
+            );
+            const userAvatar = user?.avatarUrl || user?.avatar;
+            const displayAvatar = (isCurrentUser && userAvatar)
+              ? userAvatar
+              : (rev.authorAvatar || 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&auto=format&fit=crop&q=80');
+            const displayName = isCurrentUser ? (user?.fullName || rev.authorName) : rev.authorName;
+
+            return (
+              <Card key={rev.id}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', marginBottom: 'var(--space-3)' }}>
+                  <img
+                    src={displayAvatar}
+                    alt={displayName}
+                    style={{ width: '44px', height: '44px', borderRadius: '50%', objectFit: 'cover' }}
+                  />
+                  <div style={{ flex: 1 }}>
+                    <h4 style={{ fontSize: 'var(--font-size-sm)', fontWeight: 700 }}>{displayName}</h4>
+                    <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-primary-600)', fontWeight: 600 }}>
+                      Skill: {rev.skillTaught}
+                    </div>
+                  </div>
+                  <div style={{ fontSize: 'var(--font-size-md)', fontWeight: 700, color: '#f59e0b' }}>
+                    ⭐ {rev.rating}.0
                   </div>
                 </div>
-                <div style={{ fontSize: 'var(--font-size-md)', fontWeight: 700, color: '#f59e0b' }}>
-                  ⭐ {rev.rating}.0
+
+                <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-secondary)', fontStyle: 'italic', marginBottom: 'var(--space-3)', lineHeight: 1.6 }}>
+                  "{rev.comment}"
+                </p>
+
+                <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textAlign: 'right' }}>
+                  Verified Session • {rev.date}
                 </div>
-              </div>
-
-              <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-secondary)', fontStyle: 'italic', marginBottom: 'var(--space-3)', lineHeight: 1.6 }}>
-                "{rev.comment}"
-              </p>
-
-              <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textAlign: 'right' }}>
-                Verified Session • {rev.date}
-              </div>
-            </Card>
-          ))}
+              </Card>
+            );
+          })}
         </div>
       )}
 

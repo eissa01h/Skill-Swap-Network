@@ -60,7 +60,7 @@ export function Navbar() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
                   <Link to={isAdmin ? '/admin' : '/app/profile'} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
                     <img
-                      src={user?.avatarUrl}
+                      src={user?.avatarUrl || user?.avatar || 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&auto=format&fit=crop&q=80'}
                       alt={user?.fullName}
                       style={{
                         width: '34px',

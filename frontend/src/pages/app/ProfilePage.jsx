@@ -6,21 +6,24 @@ import { Button } from '../../components/ui/Button/Button';
 import { SkillTag } from '../../components/ui/SkillTag/SkillTag';
 import { useAuth } from '../../hooks/useAuth';
 import { skillService } from '../../services/skillService';
-import { MOCK_REVIEWS } from '../../utils/mockData';
+import { feedbackService } from '../../services/feedbackService';
 
 export function ProfilePage() {
   const { user } = useAuth();
   const [teachingSkills, setTeachingSkills] = useState([]);
   const [learningInterests, setLearningInterests] = useState([]);
+  const [reviews, setReviews] = useState([]);
 
   useEffect(() => {
     async function load() {
-      const [teach, learn] = await Promise.all([
+      const [teach, learn, revs] = await Promise.all([
         skillService.getTeachingSkills(),
         skillService.getLearningInterests(),
+        feedbackService.getReviews(),
       ]);
       setTeachingSkills(teach);
       setLearningInterests(learn);
+      setReviews(revs || []);
     }
     load();
   }, []);
@@ -50,7 +53,7 @@ export function ProfilePage() {
           <Card>
             <div style={{ textAlign: 'center' }}>
               <img
-                src={user?.avatarUrl}
+                src={user?.avatarUrl || user?.avatar || 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&auto=format&fit=crop&q=80'}
                 alt={user?.fullName}
                 style={{
                   width: '110px',
@@ -150,27 +153,44 @@ export function ProfilePage() {
           {/* Verified Community Reviews */}
           <Card title="Verified Swap Reviews">
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)', marginTop: 'var(--space-2)' }}>
-              {MOCK_REVIEWS.map(rev => (
-                <div key={rev.id} style={{ borderBottom: '1px solid var(--border-subtle)', paddingBottom: 'var(--space-3)' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-1)' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                      <img
-                        src={rev.authorAvatar}
-                        alt={rev.authorName}
-                        style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover' }}
-                      />
-                      <strong style={{ fontSize: 'var(--font-size-sm)' }}>{rev.authorName}</strong>
+              {reviews.map(rev => {
+                const isCurrentUser = user && (
+                  rev.isSelf ||
+                  rev.authorName === user.fullName ||
+                  rev.authorName === user.name ||
+                  rev.authorName === user.fullName?.split(' ')[0] ||
+                  rev.authorName?.toLowerCase() === user.fullName?.toLowerCase() ||
+                  rev.authorName?.toLowerCase() === user.name?.toLowerCase() ||
+                  (user.email && rev.authorName?.toLowerCase() === user.email.split('@')[0].toLowerCase())
+                );
+                const userAvatar = user?.avatarUrl || user?.avatar;
+                const displayAvatar = (isCurrentUser && userAvatar)
+                  ? userAvatar
+                  : (rev.authorAvatar || 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&auto=format&fit=crop&q=80');
+                const displayName = isCurrentUser ? (user?.fullName || rev.authorName) : rev.authorName;
+
+                return (
+                  <div key={rev.id} style={{ borderBottom: '1px solid var(--border-subtle)', paddingBottom: 'var(--space-3)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-1)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                        <img
+                          src={displayAvatar}
+                          alt={displayName}
+                          style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover' }}
+                        />
+                        <strong style={{ fontSize: 'var(--font-size-sm)' }}>{displayName}</strong>
+                      </div>
+                      <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)' }}>{rev.date}</span>
                     </div>
-                    <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)' }}>{rev.date}</span>
+                    <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-accent-600)', fontWeight: 500, marginBottom: 'var(--space-1)' }}>
+                      Exchange: {rev.skillTaught} • ⭐ {rev.rating}.0
+                    </div>
+                    <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-secondary)', fontStyle: 'italic' }}>
+                      "{rev.comment}"
+                    </p>
                   </div>
-                  <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-accent-600)', fontWeight: 500, marginBottom: 'var(--space-1)' }}>
-                    Exchange: {rev.skillTaught} • ⭐ {rev.rating}.0
-                  </div>
-                  <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-secondary)', fontStyle: 'italic' }}>
-                    "{rev.comment}"
-                  </p>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </Card>
         </div>

@@ -144,6 +144,12 @@ export const authService = {
   async updateProfile(updates) {
     const current = getStored(STORAGE_KEYS.USER, MOCK_CURRENT_USER);
     const updated = { ...current, ...updates };
+    if (updates.avatarUrl && !updated.avatar) {
+      updated.avatar = updates.avatarUrl;
+    }
+    if (updates.avatar && !updated.avatarUrl) {
+      updated.avatarUrl = updates.avatar;
+    }
     setStored(STORAGE_KEYS.USER, updated);
 
     // Synchronize account record if exists
@@ -151,8 +157,38 @@ export const authService = {
       const accounts = getStored(STORAGE_KEYS.ACCOUNTS, []);
       const idx = accounts.findIndex((a) => a.id === updated.id || a.email === updated.email);
       if (idx >= 0) {
-        accounts[idx] = { ...accounts[idx], ...updates };
+        accounts[idx] = { ...accounts[idx], ...updates, avatar: updated.avatarUrl, avatarUrl: updated.avatarUrl };
         setStored(STORAGE_KEYS.ACCOUNTS, accounts);
+      }
+    } catch {
+      // Storage access safeguard
+    }
+
+    // Synchronize reviews written by the current user
+    try {
+      const newAvatar = updated.avatarUrl || updated.avatar;
+      const userName = updated.fullName || updated.name;
+      if (newAvatar) {
+        const reviews = getStored(STORAGE_KEYS.REVIEWS, MOCK_REVIEWS);
+        const updatedReviews = reviews.map(r => {
+          const isUserReview = r.isSelf || (
+            userName && (
+              r.authorName?.toLowerCase() === userName.toLowerCase() ||
+              r.authorName?.toLowerCase() === userName.split(' ')[0].toLowerCase() ||
+              (updated.email && r.authorName?.toLowerCase() === updated.email.split('@')[0].toLowerCase())
+            )
+          );
+          if (isUserReview) {
+            return {
+              ...r,
+              authorAvatar: newAvatar,
+              authorName: userName || r.authorName,
+              isSelf: true,
+            };
+          }
+          return r;
+        });
+        setStored(STORAGE_KEYS.REVIEWS, updatedReviews);
       }
     } catch {
       // Storage access safeguard
@@ -879,7 +915,29 @@ export const scheduleService = {
 // -------------------------------------------------------------
 export const reviewService = {
   async getReviews() {
-    return getStored(STORAGE_KEYS.REVIEWS, MOCK_REVIEWS);
+    const list = getStored(STORAGE_KEYS.REVIEWS, MOCK_REVIEWS);
+    const currentUser = getStored(STORAGE_KEYS.USER, null);
+    const currentName = currentUser?.fullName || currentUser?.name || '';
+    const currentAvatar = currentUser?.avatarUrl || currentUser?.avatar || '';
+
+    return list.map(r => {
+      const isSelf = r.isSelf || (
+        currentName && (
+          r.authorName?.toLowerCase() === currentName.toLowerCase() ||
+          r.authorName?.toLowerCase() === currentName.split(' ')[0].toLowerCase() ||
+          (currentUser?.email && r.authorName?.toLowerCase() === currentUser.email.split('@')[0].toLowerCase())
+        )
+      );
+      if (isSelf && currentAvatar) {
+        return {
+          ...r,
+          authorAvatar: currentAvatar,
+          authorName: currentName || r.authorName,
+          isSelf: true,
+        };
+      }
+      return r;
+    });
   },
 
   async submitReview({ partner, skill, rating, comment }) {
@@ -889,12 +947,13 @@ export const reviewService = {
     const reviews = getStored(STORAGE_KEYS.REVIEWS, MOCK_REVIEWS);
     const currentUser = getStored(STORAGE_KEYS.USER, null);
     const authorName = currentUser?.fullName || currentUser?.name || 'Skill Swap Member';
-    const authorAvatar = currentUser?.avatarUrl || 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&auto=format&fit=crop&q=80';
+    const authorAvatar = currentUser?.avatarUrl || currentUser?.avatar || 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&auto=format&fit=crop&q=80';
 
     const newReview = {
       id: `rev_${Date.now()}`,
       authorName,
       authorAvatar,
+      isSelf: true,
       skillTaught: skill || 'Conversational Spanish',
       rating: Number(rating) || 5,
       date: 'Today',
